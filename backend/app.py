@@ -76,6 +76,11 @@ def standardise_data():
     X_standardized.to_csv(processed_file_path, index=False)
     standardised_data = processed_file_path 
 
+    filename = os.path.basename(modified_file)
+    mean_std_file = os.path.join(app.config['UPLOAD_FOLDER'], "mean_" + filename)
+    stats_df = pd.DataFrame({'Mean': means, 'Standard_Deviation': stds})
+    stats_df.to_csv(mean_std_file)
+
     return send_file(standardised_data, as_attachment=True)
 
 
