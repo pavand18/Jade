@@ -9,11 +9,14 @@ CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}}) # Enable CORS
 
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+UPLOAD_FOLDER2 = 'standardise'
+app.config['UPLOAD_FOLDER2'] = UPLOAD_FOLDER2
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-uploaded_filename = ''
+modified_file = ''
+standardised_data = ''  
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -33,8 +36,8 @@ def upload_file():
         processed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'processed_' + filename)
         X.to_csv(processed_file_path, index=False)
 
-        global uploaded_filename
-        uploaded_filename = processed_file_path #contains output csv
+        global modified_file
+        modified_file = processed_file_path #contains output csv
 
         # Return the shape and the first 4 rows of the processed data
         return jsonify({
@@ -42,31 +45,9 @@ def upload_file():
             "message": "File uploaded and processed successfully",
         })
 
-
-# @app.route('/data', methods=['GET'])
-# def get_data():
-#     file_to_send = uploaded_filename # Assuming 'uploaded_filename' is defined globally
-
-#     if not file_to_send:
-#         return jsonify({"error": "No filename provided"}), 999
-    
-#     # Construct the full path to the file
-#     file_path = os.path.join(app.config['UPLOAD_FOLDER'], file_to_send)
-    
-#     if not os.path.exists(file_path):
-#         return jsonify({"error": "File not found"}), 404
-    
-#     # Read the CSV file into a pandas DataFrame
-#     df = pd.read_csv(file_path)
-    
-#     # Convert the DataFrame to JSON and return it
-#     return jsonify(df.to_dict(orient='records'))
-
-
 @app.route('/data', methods=['GET'])
 def get_data():
-    # file_to_send >> filename
-    file_to_send = uploaded_filename # taking input
+    file_to_send = modified_file # taking input
 
     if not file_to_send:
         return jsonify({"error": "No filename provided"}), 999
@@ -75,31 +56,28 @@ def get_data():
 
     return send_file(file_to_send, as_attachment=True)
 
-
-
-
-
-
-@app.route('/standardise', methods=['POST'])
+@app.route('/standardise', methods=['GET'])
 def standardise_data():
-    data = request.json.get('data', [])
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
+    input_file = modified_file
+    if not input_file:
+        return jsonify({"error": "No data provided"}), 404
 
-    # Convert the list of lists to a DataFrame
-    df = pd.DataFrame(data)
+    data = pd.read_csv(input_file)
+    print(f"IInput1 filename: {input_file}") # Debugging line
 
     # Standardize the data
-    X_standardized, means, stds = standardize_data(df)
+    X_standardized, means, stds = standardize_data(data)
 
-    # Convert the DataFrame back to a list of lists
-    standardized_data = X_standardized.values.tolist()
+    global standardised_data
 
-    return jsonify({
-        "standardizedData": standardized_data,
-        "means": means.tolist(),
-        "stds": stds.tolist(),
-    })
+    filename = os.path.basename(modified_file)
+    processed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "2_" + filename)
+
+    X_standardized.to_csv(processed_file_path, index=False)
+    standardised_data = processed_file_path 
+
+    return send_file(standardised_data, as_attachment=True)
+
 
 def standardize_data(data):
     means = data.mean(axis=0)
