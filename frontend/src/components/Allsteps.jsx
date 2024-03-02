@@ -18,7 +18,7 @@ function Allsteps () {
             <NavLink to="/dashboard/reconstruct"> reconstruct </NavLink>
             </li>
             <li>
-            <NavLink to="/dashboard/original_data"> original_data </NavLink>
+            <NavLink to="/dashboard/original"> original </NavLink>
             </li>
         </ul>
         </>

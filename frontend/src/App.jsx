@@ -20,7 +20,7 @@ function App() {
           <Route path="/dashboard/standardise" element={<Standardise />} />
           <Route path="/dashboard/pca" element={<Pca />} />
           <Route path="/dashboard/reconstruct" element={<Reconstruct />} />
-          <Route path="/dashboard/original_data" element={<Original />} />
+          <Route path="/dashboard/original" element={<Original />} />
           
         </Routes>
       </Router>
