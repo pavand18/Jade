@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 import pandas as pd
 from flask_cors import CORS
 import os
@@ -18,15 +18,14 @@ uploaded_filename = ''
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+        return jsonify({"error": "No file part"}), 401
     file = request.files['file']
     if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+        return jsonify({"error": "No selected file"}), 402
     if file:
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
-        
+        file.save(file_path) #contains input csv
 
         # Process the file: remove the first column
         data = pd.read_csv(file_path) 
@@ -35,9 +34,7 @@ def upload_file():
         X.to_csv(processed_file_path, index=False)
 
         global uploaded_filename
-        uploaded_filename = filename
-        print(f"IInput3 filename: {uploaded_filename}") # Debugging line
-        print(f"FFFF: {X.head(1)}") # Debugging line
+        uploaded_filename = processed_file_path #contains output csv
 
         # Return the shape and the first 4 rows of the processed data
         return jsonify({
@@ -45,31 +42,43 @@ def upload_file():
             "message": "File uploaded and processed successfully",
         })
 
+
+# @app.route('/data', methods=['GET'])
+# def get_data():
+#     file_to_send = uploaded_filename # Assuming 'uploaded_filename' is defined globally
+
+#     if not file_to_send:
+#         return jsonify({"error": "No filename provided"}), 999
+    
+#     # Construct the full path to the file
+#     file_path = os.path.join(app.config['UPLOAD_FOLDER'], file_to_send)
+    
+#     if not os.path.exists(file_path):
+#         return jsonify({"error": "File not found"}), 404
+    
+#     # Read the CSV file into a pandas DataFrame
+#     df = pd.read_csv(file_path)
+    
+#     # Convert the DataFrame to JSON and return it
+#     return jsonify(df.to_dict(orient='records'))
+
+
 @app.route('/data', methods=['GET'])
 def get_data():
-    # taking input
-    filename = uploaded_filename 
-    if not filename:
+    # file_to_send >> filename
+    file_to_send = uploaded_filename # taking input
+
+    if not file_to_send:
         return jsonify({"error": "No filename provided"}), 999
     
-    processed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'processed_' + filename)
-    
-    if not os.path.exists(processed_file_path):
-        return jsonify({"error": "Processed file not found"}), 404
-    
-    X = pd.read_csv(processed_file_path)    
-    print(f"SSSS: {X.head(1)}") # Debugging line
+    X = pd.read_csv(file_to_send) 
 
-    print(f"IInput4 filename: {uploaded_filename}") # Debugging line
-    print(f"IInput5 filename: {processed_file_path}") # Debugging line
-    print(f"IInput6 filename: {uploaded_filename}") # Debugging line
+    return send_file(file_to_send, as_attachment=True)
 
-    info = X.head(4).to_dict(orient='records', into=list)
 
-    return jsonify({
-        "shape": X.shape,
-        "first_four_rows": X.head(4).to_dict(orient='records')
-    })
+
+
+
 
 @app.route('/standardise', methods=['POST'])
 def standardise_data():

@@ -1,44 +1,48 @@
-from flask import Flask, request, render_template_string, send_file, redirect, url_for
+from flask import Flask, request, jsonify, send_file
 import pandas as pd
+from flask_cors import CORS
 import os
+# from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}}) # Enable CORS for React frontend
 
-@app.route('/', methods=['GET', 'POST'])
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+uploaded_filename = ''
+
+@app.route('/upload', methods=['POST'])
 def upload_file():
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            return 'No file part'
-        file = request.files['file']
-        if file.filename == '':
-            return 'No selected file'
-        if file:
-            # Assuming the file is a CSV
-            data = pd.read_csv(file)
-            # Select only the first   10 columns
-            selected_columns = data.iloc[:, :10]
-            # Output CSV file path for selected columns
-            output_csv_file = 'output10.csv'
-            # Save the selected columns to a new CSV file
-            selected_columns.to_csv(output_csv_file, index=False)
-            # Render a template with a download button
-            return render_template_string("""
-            <p>File uploaded successfully. Click the button below to download the processed file.</p>
-            <a href="{{ url_for('download_file') }}">Download Processed File</a>
-            """, url_for=url_for)
-    return render_template_string("""
-    <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="file">
-        <input type="submit" value="Upload">
-    </form>
-    """)
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+    if file:
+        print(f"IInput3 filename: {file}") # Debugging line
 
-@app.route('/download')
-def download_file():
-    # Output CSV file path for selected columns
-    output_csv_file = 'output10.csv'
-    # Return the file for download
-    return send_file(output_csv_file, as_attachment=True)
+        data = pd.read_csv(file) 
+        X = data.iloc[:, 1:]
+        processed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'processed_' + file)
+
+        global uploaded_filename
+        X.to_csv(processed_file_path, index=False)
+        uploaded_filename = file.processed_file_path
+
+        print(f"IInput3 filename: {uploaded_filename}") # Debugging line
+        # print(f"FFFF: {data.head(1)}") # Debugging line
+        # print(f"SSSS: {X.head(1)}") # Debugging line
+        
+
+        # Return the shape and the first 4 rows of the processed data
+        return jsonify({
+            "success": True,
+            "message": "File uploaded and processed successfully",
+        }) 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
