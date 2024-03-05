@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Import axios
+import Input from '../components/Input';
+import Allsteps from '../components/Allsteps';
 
 const Reconstruct = () => {
  const [csvData, setCsvData] = useState(null);
@@ -60,6 +62,8 @@ const Reconstruct = () => {
 
  return (
     <div>
+      <Input />
+      <Allsteps />
       {csvData ? (
         <div>
           <h2>CSV Data:</h2>

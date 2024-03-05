@@ -1,25 +1,36 @@
+@app.route('/data', methods=['GET'])
+def get_data():
+    # taking input
+    filename = uploaded_filename 
+    if not filename:
+        return jsonify({"error": "No filename provided"}), 999
+    
+    processed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'processed_' + filename)
+    
+    if not os.path.exists(processed_file_path):
+        return jsonify({"error": "Processed file not found"}), 404
+    
+    X = pd.read_csv(processed_file_path)    
+    print(f"SSSS: {X.head(1)}") # Debugging line
+
+    print(f"IInput4 filename: {uploaded_filename}") # Debugging line
+    print(f"IInput5 filename: {processed_file_path}") # Debugging line
+    print(f"IInput6 filename: {uploaded_filename}") # Debugging line
+
+    info = X.head(4).to_dict(orient='records', into=list)
+
+    return jsonify({
+        "shape": X.shape,
+        "first_four_rows": X.head(4).to_dict(orient='records')
+    })
+
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Import axios
-import Input from '../components/Input';
-import Allsteps from '../components/Allsteps';
-import Plot2 from '../components/Plot2';
-import Plot1 from '../components/Plot1';
-import Plot3 from '../components/Plot3'; 
 
-const Original = () => {
+const Data = () => {
  const [csvData, setCsvData] = useState(null);
  const [csvBlob, setCsvBlob] = useState(null);
- const [showPlot, setShowPlot] = useState(false);
- const [comparePlot, setComparePlot] = useState(false);
-
-
- const togglePlot = () => {
-  setShowPlot(!showPlot);
-}; 
-
-const toggleit = () => {
-  setComparePlot(!comparePlot);
-};
 
  useEffect(() => {
     fetchCsvData();
@@ -27,7 +38,7 @@ const toggleit = () => {
 
  const fetchCsvData = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/original', {
+      const response = await axios.get('http://localhost:5000/data', {
         responseType: 'blob', // Set the response type to blob to handle binary data
       });
 
@@ -76,8 +87,6 @@ const toggleit = () => {
 
  return (
     <div>
-      <Input />
-      <Allsteps/ >
       {csvData ? (
         <div>
           <h2>CSV Data:</h2>
@@ -104,17 +113,8 @@ const toggleit = () => {
       ) : (
         <p>Loading CSV data...</p>
       )}
-      
-      <button onClick={toggleit}>
-        {comparePlot ? 'Compare Plot' : 'Compare Plot'}
-      </button>
-      {comparePlot && (
-        <>
-          <Plot3 />
-        </>
-      )} 
     </div>
  );
 };
 
-export default Original;
+export default Data;

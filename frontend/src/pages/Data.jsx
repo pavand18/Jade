@@ -1,9 +1,20 @@
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Import axios
+import Input from '../components/Input';
+import Allsteps from '../components/Allsteps';
+import Plot1 from '../components/Plot1';
+import Plot3 from '../components/Plot3';
+
 
 const Data = () => {
  const [csvData, setCsvData] = useState(null);
  const [csvBlob, setCsvBlob] = useState(null);
+ const [showPlot, setShowPlot] = useState(false);
+
+ const togglePlot = () => {
+  setShowPlot(!showPlot);
+};
 
  useEffect(() => {
     fetchCsvData();
@@ -60,6 +71,8 @@ const Data = () => {
 
  return (
     <div>
+      <Input />
+      <Allsteps/ >
       {csvData ? (
         <div>
           <h2>CSV Data:</h2>
@@ -86,6 +99,10 @@ const Data = () => {
       ) : (
         <p>Loading CSV data...</p>
       )}
+      <button onClick={togglePlot}>
+        {showPlot ? 'Hide Plot' : 'Show Plot'}
+      </button>
+      {showPlot && <Plot1 /> } 
     </div>
  );
 };
