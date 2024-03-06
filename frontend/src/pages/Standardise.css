@@ -1,0 +1,36 @@
+.standardise-container {
+    text-align: center; /* Center align content */
+  }
+  
+  .data-section {
+    margin-top: 20px; /* Add some top margin for spacing */
+  }
+  
+  .data-table {
+    width: 100%; /* Set table width to 100% */
+    border-collapse: collapse; /* Collapse table borders */
+  }
+  
+  .data-table th, .data-table td {
+    border: 1px solid #ddd; /* Add border to table cells */
+    padding: 8px; /* Add padding to table cells */
+  }
+  
+  .data-table th {
+    background-color: #f2f2f2; /* Background color for table headers */
+  }
+  
+  .download-button {
+    margin-top: 20px; /* Add some top margin for spacing */
+    padding: 10px 20px; /* Add padding to the button */
+    background-color: #007bff; /* Button background color */
+    color: #fff; /* Button text color */
+    border: none; /* Remove button border */
+    border-radius: 4px; /* Add border radius to create rounded corners */
+    cursor: pointer; /* Add pointer cursor on hover */
+  }
+  
+  .download-button:hover {
+    background-color: #0056b3; /* Change background color on hover */
+  }
+  

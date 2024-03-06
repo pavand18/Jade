@@ -1,0 +1,30 @@
+.plot-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0px; /* Add padding to the plot container */
+    margin: 0px; /* Add margin around the plot container */
+  }
+  
+  .plot-image {
+    max-width: 100%; /* Ensure the plot image doesn't exceed its container */
+    max-height: 100%; /* Ensure the plot image doesn't exceed its container */
+  }
+  
+  
+  .plot-container2 {
+    display: flex;
+    justify-content: space-between; /* Distribute plots evenly along the container */
+  }
+  
+  .plot {
+    flex: 1; /* Each plot takes equal space */
+    /* border: 1px solid #ccc; Add border to each plot */
+    padding: 10px; /* Add padding to each plot */
+    margin-right: 10px; /* Add margin between plots */
+  }
+  
+  .plot:last-child {
+    margin-right: 0; /* Remove margin from the last plot to prevent spacing */
+  }
+  

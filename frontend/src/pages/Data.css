@@ -1,0 +1,46 @@
+.data-container {
+    text-align: center;
+  }
+  
+  .data-table-container {
+    margin-top: 20px;
+  }
+  
+  .data-title {
+    margin-bottom: 10px;
+  }
+  
+  .data-table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  .data-table th,
+  .data-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  .data-table th {
+    background-color: #f2f2f2;
+  }
+  
+  .data-button {
+    margin-top: 10px;
+    border: 2px solid #04AA6D;
+    border-radius: 4px;
+  }
+  
+  .button-container {
+    display: flex; /* Use flexbox to arrange buttons horizontally */
+    justify-content: center; /* Center the buttons horizontally */
+    margin-top: 10px; /* Add some top margin for spacing */
+    margin-bottom: 10px;
+  }
+  
+  .button-container button {
+    margin-right: 20px; /* Add space between buttons */
+    margin-left: 20px;
+  }
+  
+  

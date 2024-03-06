@@ -237,7 +237,7 @@ def plot1():
 
     # Plot the limited data
     plt.plot(limited_data)
-    plt.title('Plot of Original data')
+    plt.title('Plot of Input data')
     plt.xlabel('Index')
     plt.ylabel('Data')
     plt.grid(True) 
@@ -265,7 +265,7 @@ def plot2():
 
     # Plot the limited data
     plt.plot(limited_data)
-    plt.title('Plot of Original data')
+    plt.title('Plot of Reconstructed data')
     plt.xlabel('Index')
     plt.ylabel('Data')
     plt.grid(True) 
@@ -298,7 +298,7 @@ def plot3():
     plt.figure(figsize=(8, 4))
 
     # Plot the limited data
-    plt.plot(data_from_second_column_1, label='Original Plot')
+    plt.plot(data_from_second_column_1, label='Input Plot')
     plt.plot(data_from_second_column_2, label='Reconstructed Plot')
     plt.title(f'Combined Plot (Indices: {start_index}-{end_index})')
     plt.xlabel('Index')

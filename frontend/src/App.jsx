@@ -7,11 +7,13 @@ import Standardise from './pages/Standardise'
 import Pca from './pages/Pca'
 import Reconstruct from './pages/Reconstruct'
 import Original from './pages/Original'
+import Topbar from './components/Topbar'
 
 function App() {
   return (
     <>
       <Router>
+        <Topbar />
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
@@ -21,7 +23,6 @@ function App() {
           <Route path="/dashboard/pca" element={<Pca />} />
           <Route path="/dashboard/reconstruct" element={<Reconstruct />} />
           <Route path="/dashboard/original" element={<Original />} />
-          
         </Routes>
       </Router>
     </>

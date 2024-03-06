@@ -1,0 +1,58 @@
+.all-steps-container {
+    border: 2px solid #a7a7ab;
+    width: 700px;
+    margin-top: 5px;
+    margin-left: auto;
+    margin-right: auto;
+
+    background-color: lightgrey ; /* Background color for the container */
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-radius: 10px;
+}
+
+.steps-list {
+    list-style-type: none; /* Remove bullet points from the list */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margin */
+    justify-content: center;
+    display: flex; /* Display list items horizontally */
+}
+
+.steps-list li {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+    margin-right: 10px; /* Add spacing between list items */
+}
+
+.step-button {
+    font-size: large;
+    text-decoration: none; /* Remove underline from links */
+    background-color: #ffc107; /* Button background color */
+    color: black; /* Button text color */
+    padding: 8px 16px; /* Add padding to the buttons */
+    border-radius: 5px; /* Add border radius to create rounded corners */
+    transition: background-color 0.3s; /* Add smooth transition effect */
+}
+
+.step-button:hover {
+    background-color: #cdbb86; /* Change background color on hover */
+}
+
+.step-button:active {
+    background-color: #cdbb86; /* Change background color on hover */
+}
+
+/* src/Allsteps.css */
+
+/* src/Allsteps.css */
+
+/* Styles for the active button */
+.step-button.active {
+    background-color: #17a2b8; /* Change background color for active button */
+    color: black; /* Change text color for active button */
+  }
+  
+  
+  
