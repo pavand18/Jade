@@ -102,10 +102,16 @@ import axios from 'axios'; // Import axios
 import Input from '../components/Input';
 import Allsteps from '../components/Allsteps';
 import './Standardise.css'; // Import CSS file for styling
+import Plot6 from '../components/Plot6';
 
 const Standardise = () => {
  const [csvData, setCsvData] = useState(null);
  const [csvBlob, setCsvBlob] = useState(null);
+ const [showPlot, setShowPlot] = useState(false);
+
+ const togglePlot = () => {
+  setShowPlot(!showPlot);
+};
 
  useEffect(() => {
     fetchCsvData();
@@ -184,12 +190,20 @@ const Standardise = () => {
               ))}
             </tbody>
           </table>
-          <button className="download-button" onClick={downloadCsv}>Download CSV</button>
         </div>
       ) : (
         <p>Loading CSV data...</p>
       )}
-    </div>
+      <div className="button-container">
+        <button className="data-button" onClick={downloadCsv}>
+              Download CSV
+            </button>
+          <button className="data-button" onClick={togglePlot}>
+          {showPlot ? 'Hide Plot' : 'Show Plot'}
+        </button>
+      </div>
+      {showPlot && <Plot6 />}
+      </div>
  );
 };
 

@@ -100,13 +100,19 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Import axios
-import Input from '../components/Input';
 import Allsteps from '../components/Allsteps';
 import './Pca.css'; // Import CSS file for styling
+import Plot4 from '../components/Plot4';
+
 
 const Pca = () => {
  const [csvData, setCsvData] = useState(null);
  const [csvBlob, setCsvBlob] = useState(null);
+ const [showPlot, setShowPlot] = useState(false);
+
+ const togglePlot = () => {
+  setShowPlot(!showPlot);
+};
 
  useEffect(() => {
     fetchCsvData();
@@ -185,12 +191,20 @@ const Pca = () => {
               ))}
             </tbody>
           </table>
-          <button className="download-button" onClick={downloadCsv}>Download CSV</button>
         </div>
       ) : (
         <p>Loading CSV data...</p>
       )}
-    </div>
+      <div className="button-container">
+          <button className="data-button" onClick={downloadCsv}>
+                Download CSV
+              </button>
+            <button className="data-button" onClick={togglePlot}>
+            {showPlot ? 'Hide Plot' : 'Show Plot'}
+          </button>
+        </div>
+        {showPlot && <Plot4 />}
+      </div>
  );
 };
 

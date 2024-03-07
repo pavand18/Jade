@@ -30,6 +30,7 @@ g_X = ''
 reconstructed_file = ''
 g_mean_std_file = ''
 g_original_file = ''
+g_eigenvalues = ''
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -123,6 +124,9 @@ def dopca():
     sorted_indices = np.argsort(eigenvalues)[::-1]
     eigenvalues = eigenvalues[sorted_indices]
     eigenvectors = eigenvectors[:, sorted_indices]
+
+    global g_eigenvalues
+    g_eigenvalues = eigenvalues
 
     n_components = 7  # Adjust as needed
     principal_components = eigenvectors[:, :n_components]
@@ -228,7 +232,7 @@ def plot1():
     original_column_data = pd.read_csv(original_data_toplot)
 
     # specify col. num. here
-    data_from_particular_column = original_column_data.iloc[:, 8]
+    data_from_particular_column = original_column_data.iloc[:, 4]
     start_index = 0  # Start index of the data points to select
     end_index = 200  # End index of the data points to select
     limited_data = data_from_particular_column[start_index:end_index]
@@ -256,7 +260,7 @@ def plot2():
     original_column_data = pd.read_csv(original_data_toplot)
 
     # specify col. num. here
-    data_from_particular_column = original_column_data.iloc[:, 8]
+    data_from_particular_column = original_column_data.iloc[:, 4]
     start_index = 0  # Start index of the data points to select
     end_index = 200  # End index of the data points to select
     limited_data = data_from_particular_column[start_index:end_index]
@@ -278,6 +282,25 @@ def plot2():
 
     return {'plot_url': plot_url}
 
+@app.route('/plot4', methods=['GET'])
+def plot4():
+    eigenvalues = g_eigenvalues
+    plt.figure(figsize=(6, 4))
+    plt.plot(range(1, 10), eigenvalues[:9], marker='o')
+    plt.title('Variance of First 9 Principal Components')
+    plt.xlabel('Principal Component')
+    plt.ylabel('Variance')
+    plt.grid(True)
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+
+    plot_url = base64.b64encode(buf.read()).decode()
+
+    return {'plot_url': plot_url}
+
+
 @app.route('/plot3', methods=['GET'])
 def plot3():
     file_path_1 = modified_file
@@ -292,8 +315,8 @@ def plot3():
 
     start_index = 0
     end_index = 200                         
-    data_from_second_column_1 = load_and_select_data(file_path_1, 0, start_index, end_index)
-    data_from_second_column_2 = load_and_select_data(file_path_2, 0, start_index, end_index)
+    data_from_second_column_1 = load_and_select_data(file_path_1, 4, start_index, end_index)
+    data_from_second_column_2 = load_and_select_data(file_path_2, 4, start_index, end_index)
 
     plt.figure(figsize=(8, 4))
 
@@ -320,6 +343,75 @@ def load_and_select_data(file_path, column_index, start_index, end_index):
     data_from_column = reconstructed_column_data.iloc[:, column_index]
     return data_from_column[start_index:end_index]
 
+@app.route('/plot5', methods=['GET'])
+def plot5():
+    file_path_1 = standardised_file
+    file_path_2 = reconstructed_file
+    print(f"AAAA filename: {file_path_1}") # Debugging line
+    print(f"BBBB filename: {file_path_2}") # Debugging line
+
+    def load_and_select_data(file_path, column_index, start_index, end_index):
+        reconstructed_column_data = pd.read_csv(file_path)
+        data_from_column = reconstructed_column_data.iloc[:, column_index]
+        return data_from_column[start_index:end_index]
+
+    start_index = 0
+    end_index = 200                         
+    data_from_second_column_1 = load_and_select_data(file_path_1, 4, start_index, end_index)
+    data_from_second_column_2 = load_and_select_data(file_path_2, 4, start_index, end_index)
+
+    plt.figure(figsize=(8, 4))
+
+    # Plot the limited data
+    plt.plot(data_from_second_column_1, label='Standardised Plot')
+    plt.plot(data_from_second_column_2, label='Reconstructed_S Plot')
+    plt.title(f'Combined Plot (Indices: {start_index}-{end_index})')
+    plt.xlabel('Index')
+    plt.ylabel('Data')
+    plt.grid(True)
+    plt.legend()  # Add legend to distinguish between the two plots
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+
+    plot_url = base64.b64encode(buf.read()).decode()
+    plt.close()  # Close the figure after saving
+
+    return {'plot_url': plot_url}
+
+def load_and_select_data(file_path, column_index, start_index, end_index):
+    reconstructed_column_data = pd.read_csv(file_path)
+    data_from_column = reconstructed_column_data.iloc[:, column_index]
+    return data_from_column[start_index:end_index]
+
+@app.route('/plot6', methods=['GET'])
+def plot6():
+    original_data_toplot = standardised_file
+    original_column_data = pd.read_csv(original_data_toplot)
+
+    # specify col. num. here
+    data_from_particular_column = original_column_data.iloc[:, 4]
+    start_index = 0  # Start index of the data points to select
+    end_index = 200  # End index of the data points to select
+    limited_data = data_from_particular_column[start_index:end_index]
+
+    plt.figure(figsize=(6, 4))
+
+    # Plot the limited data
+    plt.plot(limited_data)
+    plt.title('Plot of Standardised data')
+    plt.xlabel('Index')
+    plt.ylabel('Data')
+    plt.grid(True) 
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+
+    plot_url = base64.b64encode(buf.read()).decode()
+
+    return {'plot_url': plot_url}
 
 
 if __name__ == "__main__":

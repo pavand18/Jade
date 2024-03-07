@@ -103,10 +103,17 @@ import axios from 'axios'; // Import axios
 import Input from '../components/Input';
 import Allsteps from '../components/Allsteps';
 import './Reconstruct.css'; // Import CSS file for styling
+import Plot5 from '../components/Plot5';
+
 
 const Reconstruct = () => {
   const [csvData, setCsvData] = useState(null);
   const [csvBlob, setCsvBlob] = useState(null);
+ const [showPlot, setShowPlot] = useState(false);
+
+ const togglePlot = () => {
+  setShowPlot(!showPlot);
+};
  
   useEffect(() => {
      fetchCsvData();
@@ -185,12 +192,20 @@ const Reconstruct = () => {
                ))}
              </tbody>
            </table>
-           <button className="download-button" onClick={downloadCsv}>Download CSV</button>
          </div>
        ) : (
          <p>Loading CSV data...</p>
        )}
-     </div>
+       <div className="button-container">
+          <button className="data-button" onClick={downloadCsv}>
+                Download CSV
+              </button>
+            <button className="data-button" onClick={togglePlot}>
+            {showPlot ? 'Hide Plot' : 'Show Plot'}
+          </button>
+        </div>
+        {showPlot && <Plot5 />}
+      </div>
   );
  };
  

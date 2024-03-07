@@ -10,7 +10,7 @@ const Plot = () => {
 
  const fetchPlot = async () => {
     try {
-      const response = await fetch('http://localhost:5000/plot4');
+      const response = await fetch('http://localhost:5000/plot6');
       const data = await response.json();
       setPlotUrl(data.plot_url);
     } catch (error) {
