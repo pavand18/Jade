@@ -161,7 +161,7 @@ const Original = () => {
  
   const fetchCsvData = async () => {
      try {
-       const response = await axios.get('http://localhost:5000/original', {
+       const response = await axios.get('https://a7d966b0-0d45-43cf-ab81-da20ab8751c3-00-5c6bn8ip3ykm.sisko.replit.dev/original', {
          responseType: 'blob', // Set the response type to blob to handle binary data
        });
  
