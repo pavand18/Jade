@@ -1,11 +1,21 @@
+// replit
+
+
 // import React, { useState, useEffect } from 'react';
 // import axios from 'axios'; // Import axios
 // import Input from '../components/Input';
 // import Allsteps from '../components/Allsteps';
+// import './Standardise.css'; // Import CSS file for styling
+// import Plot6 from '../components/Plot6';
 
 // const Standardise = () => {
 //  const [csvData, setCsvData] = useState(null);
 //  const [csvBlob, setCsvBlob] = useState(null);
+//  const [showPlot, setShowPlot] = useState(false);
+
+//  const togglePlot = () => {
+//   setShowPlot(!showPlot);
+// };
 
 //  useEffect(() => {
 //     fetchCsvData();
@@ -13,7 +23,7 @@
 
 //  const fetchCsvData = async () => {
 //     try {
-//       const response = await axios.get('http://localhost:5000/standardise', {
+//       const response = await axios.get('https://a7d966b0-0d45-43cf-ab81-da20ab8751c3-00-5c6bn8ip3ykm.sisko.replit.dev/standardise', {
 //         responseType: 'blob', // Set the response type to blob to handle binary data
 //       });
 
@@ -61,13 +71,12 @@
 //  };
 
 //  return (
-//     <div>
-//       <Input />
+//     <div className="standardise-container">
 //       <Allsteps />
 //       {csvData ? (
-//         <div>
+//         <div className="data-section">
 //           <h2>Standardise Data:</h2>
-//           <table>
+//           <table className="data-table">
 //             <thead>
 //               <tr>
 //                 {Object.keys(csvData[0]).map((header, index) => (
@@ -85,16 +94,26 @@
 //               ))}
 //             </tbody>
 //           </table>
-//           <button onClick={downloadCsv}>Download CSV</button>
 //         </div>
 //       ) : (
 //         <p>Loading CSV data...</p>
 //       )}
-//     </div>
+//       <div className="button-container">
+//         <button className="data-button" onClick={downloadCsv}>
+//               Download CSV
+//             </button>
+//           <button className="data-button" onClick={togglePlot}>
+//           {showPlot ? 'Hide Plot' : 'Show Plot'}
+//         </button>
+//       </div>
+//       {showPlot && <Plot6 />}
+//       </div>
 //  );
 // };
 
 // export default Standardise;
+
+
 
 
 import React, { useState, useEffect } from 'react';
@@ -119,7 +138,7 @@ const Standardise = () => {
 
  const fetchCsvData = async () => {
     try {
-      const response = await axios.get('https://a7d966b0-0d45-43cf-ab81-da20ab8751c3-00-5c6bn8ip3ykm.sisko.replit.dev/standardise', {
+      const response = await axios.get('http://localhost:5000/standardise', {
         responseType: 'blob', // Set the response type to blob to handle binary data
       });
 
