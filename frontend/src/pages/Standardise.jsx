@@ -119,7 +119,7 @@ const Standardise = () => {
 
  const fetchCsvData = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/standardise', {
+      const response = await axios.get('https://a7d966b0-0d45-43cf-ab81-da20ab8751c3-00-5c6bn8ip3ykm.sisko.replit.dev/standardise', {
         responseType: 'blob', // Set the response type to blob to handle binary data
       });
 

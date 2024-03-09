@@ -44,7 +44,7 @@ const Plot = () => {
 
  const fetchPlot = async () => {
     try {
-      const response = await fetch('http://localhost:5000/plot2');
+      const response = await fetch('https://a7d966b0-0d45-43cf-ab81-da20ab8751c3-00-5c6bn8ip3ykm.sisko.replit.dev/plot2');
       const data = await response.json();
       setPlotUrl(data.plot_url);
     } catch (error) {
