@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Plot.css'; // Import CSS file for styling
+import './Plot.css'; // 
 
 const Plot = () => {
  const [plotUrl, setPlotUrl] = useState('');
