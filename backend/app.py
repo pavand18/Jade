@@ -228,7 +228,8 @@ def col1():
     return jsonify({
         "success": True,
         "message": "Data fetched successfully",
-        "data": limited_data
+        "data": limited_data,
+        "data2": limited_data
     })
 
 @app.route('/submit2', methods=['POST'])
@@ -328,10 +329,16 @@ def Ocol():
     column_number = X.iloc[:, colum] # Adjust the index if the column is not the 4th one
     limited_data = column_number[:1000].tolist()
 
+    X2 = pd.read_csv(modified_file)
+    colum2 = int(input_n5)
+    column_number2 = X2.iloc[:, colum2] # Adjust the index if the column is not the 4th one
+    limited_data2 = column_number2[:1000].tolist()
+
     return jsonify({
         "success": True,
         "message": "Data fetched successfully",
-        "data": limited_data
+        "data": limited_data,
+        "data2": limited_data2
     })
 
 @app.route('/var', methods=['GET'])
@@ -646,9 +653,6 @@ def plot4():
     plot_url = base64.b64encode(buf.read()).decode()
 
     return {'plot_url': plot_url}
-
-
-
 
 @app.route('/plot3', methods=['GET'])
 def plot3():

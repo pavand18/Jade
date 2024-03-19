@@ -71,7 +71,6 @@ const Original = () => {
         <p>Loading CSV data...</p>
       )}
       <div>
-        
       </div>
       <Oinput />
     </div>

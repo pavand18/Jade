@@ -9,6 +9,7 @@ const Dcol = () => {
       const response = await fetch('http://localhost:5000/col1');
       const result = await response.json();
       if (result.success) {
+        console.log(result.data2);
         setData(result.data);
       } else {
         console.error(result.error);
