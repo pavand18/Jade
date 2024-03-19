@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LineChart from '../pages/LineChart';
-import Col1 from './Dcol';
 import Rcol from './Rcol';
 
 const Rinput = () => {
