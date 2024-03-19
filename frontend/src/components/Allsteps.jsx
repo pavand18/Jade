@@ -1,32 +1,3 @@
-// import React from 'react';
-// import { NavLink } from "react-router-dom";
-
-// function Allsteps () {
-//     return (
-//         <>
-//         <ul>
-//             <li>
-//             <NavLink to="/dashboard/data"> Data </NavLink>
-//             </li>
-//             <li>
-//             <NavLink to="/dashboard/standardise"> standardise </NavLink>
-//             </li>
-//             <li>
-//             <NavLink to="/dashboard/pca"> pca </NavLink>
-//             </li>
-//             <li>
-//             <NavLink to="/dashboard/reconstruct"> reconstruct </NavLink>
-//             </li>
-//             <li>
-//             <NavLink to="/dashboard/original"> original </NavLink>
-//             </li>
-//         </ul>
-//         </>
-//     )
-// }
-
-// export default Allsteps
-
 import React from 'react';
 import { NavLink } from "react-router-dom";
 import "./Allsteps.css"; // Import CSS file for styling
@@ -42,7 +13,7 @@ function Allsteps() {
                     <NavLink to="/dashboard/standardise" className="step-button" activeClassName="active">Standardise</NavLink>
                 </li>
                 <li>
-                    <NavLink to="/dashboard/pca" className="step-button" activeClassName="active">PCA</NavLink>
+                    <NavLink to="/dashboard/submit" className="step-button" activeClassName="active">PCA</NavLink>
                 </li>
                 <li>
                     <NavLink to="/dashboard/reconstruct" className="step-button" activeClassName="active">Reconstruct</NavLink>

@@ -120,6 +120,8 @@ import axios from 'axios'; // Import axios
 import Allsteps from '../components/Allsteps';
 import './Pca.css'; // Import CSS file for styling
 import Plot4 from '../components/Plot4';
+import NumberInputForm from '../components/NumberInputForm';
+import LineChart from './LineChart';
 
 const Pca = () => {
   const [csvData, setCsvData] = useState(null);
@@ -181,7 +183,8 @@ const Pca = () => {
 
 return (
   <div className="pca-container">
-    <Allsteps />
+    {/* <Allsteps /> */}
+    {/* <NumberInputForm /> */}
     {csvData ? (
       <div className="data-section">
         <h2>Pca Data:</h2>

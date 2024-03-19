@@ -186,6 +186,8 @@ import axios from 'axios'; // Import axios
 import Allsteps from '../components/Allsteps';
 import Plot1 from '../components/Plot1';
 import './Data.css'; // Import CSS file for styling
+import PlotInput from '../components/PlotInput';
+
 
 const Data = () => {
   const [csvData, setCsvData] = useState(null);
@@ -277,11 +279,12 @@ const Data = () => {
         {/* <button className="data-button" onClick={downloadCsv}>
               Download CSV
             </button> */}
-          <button className="data-button" onClick={togglePlot}>
-          {showPlot ? 'Hide Plot' : 'Show Plot'}
-        </button>
+          {/* <button className="data-button" onClick={togglePlot}>
+          {showPlot ? 'Hide Plot' : 'Show Plot'} */}
+        {/* </button> */}
       </div>
-      {showPlot && <Plot1 />}
+      {/* {showPlot && <Plot1 />} */}
+      <PlotInput />
     </div>
   );
 };

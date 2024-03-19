@@ -121,6 +121,9 @@ import Input from '../components/Input';
 import Allsteps from '../components/Allsteps';
 import './Standardise.css'; // Import CSS file for styling
 import Plot6 from '../components/Plot6';
+import LineChart from './LineChart';
+import PlotInput from '../components/PlotInput';
+import PlotInput2 from '../components/PlotInput2';
 
 
 const Standardise = () => {
@@ -184,6 +187,7 @@ const Standardise = () => {
 return (
   <div className="standardise-container">
     <Allsteps />
+    {/* <LineChart /> */}
     {csvData ? (
       <div className="data-section">
         <h2>Standardise Data:</h2>
@@ -210,14 +214,15 @@ return (
       <p>Loading CSV data...</p>
     )}
     <div className="button-container">
-      {/* <button className="data-button" onClick={downloadCsv}>
+      {/* {/* <button className="data-button" onClick={downloadCsv}>
             Download CSV
           </button> */}
-        <button className="data-button" onClick={togglePlot}>
+        {/* <button className="data-button" onClick={togglePlot}>
         {showPlot ? 'Hide Plot' : 'Show Plot'}
-      </button>
+      </button> */} 
     </div>
-    {showPlot && <Plot6 />}
+    {/* {showPlot && <Plot6 />} */}
+      <PlotInput2 />
     </div>
 );
 };

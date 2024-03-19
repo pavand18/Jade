@@ -9,12 +9,8 @@ import matplotlib
 matplotlib.use('Agg')
 import io
 import base64
-import flask
-from collections import OrderedDict
-import json
 from collections import OrderedDict
 import csv
-
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}}) # Enable CORS for React frontend
@@ -40,7 +36,9 @@ g_original_file = ''
 g_eigenvalues = ''
 g_input_file = 'input.csv'
 fake_output_file = 'output.csv'
-
+input_n2 = 0
+input_n1 = 0
+input_n3 = 0
 
 def add_row_to_csv(input_file, output_file):
     # Read the existing CSV file
@@ -61,7 +59,6 @@ def add_row_to_csv(input_file, output_file):
     with open(output_file, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(data)
-
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -94,7 +91,6 @@ def upload_file():
             "message": "File uploaded and processed successfully",
         })
 
-
 @app.route('/data', methods=['GET'])
 def get_data():
     file_to_send = modified_file # Assuming the filename is passed as a query parameter
@@ -114,7 +110,6 @@ def get_data():
         "message": "File uploaded and processed successfully",
         "data": first_four_rows
     })
-
 
 # @app.route('/data', methods=['GET'])
 # def get_data():
@@ -198,15 +193,88 @@ def standardise_data():
 #     # return send_file(standardised_file, as_attachment=True)
 #     return send_from_directory('uploads', f_filename, as_attachment=True)
 
-
 def standardize_data(data):
     means = data.mean(axis=0)
     stds = data.std(axis=0)
     X_standardized = (data - means) / stds
     return X_standardized, means, stds
 
+@app.route('/submit1', methods=['POST'])
+def submit1():
+    data = request.get_json()
+    number = data.get('number')
+    if number:
+        global input_n1 
+        input_n1 = number    
+        # Here you can process the number as needed
+        print(f"Received number: {input_n1}")
+        return jsonify({"message": "Number received successfully"}), 200
+    else:
+        return jsonify({"error": "No number provided"}), 400
+
+@app.route('/col1', methods=['GET'])
+def col1():
+    file_to_send = modified_file
+    if not file_to_send:
+        return jsonify({"error": "No filename provided"}), 400
+    
+    X = pd.read_csv(modified_file)
+    colum = int(input_n1)
+    column_number = X.iloc[:, colum] # Adjust the index if the column is not the 4th one
+    limited_data = column_number[:1000].tolist()
+
+    return jsonify({
+        "success": True,
+        "message": "Data fetched successfully",
+        "data": limited_data
+    })
+
+@app.route('/submit2', methods=['POST'])
+def submit2():
+    data = request.get_json()
+    number = data.get('number')
+    if number:
+        global input_n2 
+        input_n2 = number    
+        # Here you can process the number as needed
+        print(f"Received number: {input_n2}")
+        return jsonify({"message": "Number received successfully"}), 200
+    else:
+        return jsonify({"error": "No number provided"}), 400
+
+@app.route('/col2', methods=['GET'])
+def col2():
+    file_to_send = standardised_file
+    if not file_to_send:                
+        return jsonify({"error": "No filename provided"}), 400
+
+    X = pd.read_csv(standardised_file)
+    colum = int(input_n2)
+    column_number = X.iloc[:, colum] # Adjust the index if the column is not the 4th one
+    limited_data = column_number[:1000].tolist()
+
+    return jsonify({
+        "success": True,
+        "message": "Data fetched successfully",
+        "data": limited_data
+    })
+
+@app.route('/submit3', methods=['POST'])
+def submit3():
+    data = request.get_json()
+    number = data.get('number')
+    if number:
+        global input_n3 
+        input_n3 = number    
+        # Here you can process the number as needed
+        print(f"Received number: {input_n3}")
+        return jsonify({"message": "Number received successfully"}), 200
+    else:
+        return jsonify({"error": "No number provided"}), 400
+
 @app.route('/dopca', methods=['GET'])
 def dopca():
+    n_components = request.args.get('n_components', default=2, type=int) # Adjust default as needed
     X_standardized = pd.read_csv(standardised_file)
     cov_matrix = np.cov(X_standardized, rowvar=False)
     cov_matrix.shape
@@ -218,7 +286,9 @@ def dopca():
     global g_eigenvalues
     g_eigenvalues = eigenvalues
 
-    n_components = 7  # Adjust as needed
+    print(f"XXXXXX number: {input_n3}")
+
+    n_components = int(input_n3)  # Adjust as needed
     principal_components = eigenvectors[:, :n_components]
 
     X_pca = np.dot(X_standardized, principal_components)
@@ -246,7 +316,6 @@ def dopca():
         "message": "File uploaded and processed successfully",
         "data": first_four_rows
     })
-
 
 # @app.route('/dopca', methods=['GET'])
 # def dopca():
@@ -280,7 +349,6 @@ def dopca():
 
 #     return send_file(compress_file, as_attachment=True)
 
-
 @app.route('/reconstruct', methods=['GET'])
 def reconstruct():
     X_pca = g_X_pca
@@ -307,7 +375,6 @@ def reconstruct():
         "message": "File uploaded and processed successfully",
         "data": first_four_rows
     }) 
-
 
 @app.route('/original', methods=['GET'])
 def original():
@@ -427,7 +494,6 @@ def original():
 
 #     return send_file(original_csv_file, as_attachment=True)
 
-
 def reverse_standardization(reconstructed_data, means, stds):
         # Reverse the standardization
         original_data = (reconstructed_data * stds) + means
@@ -507,7 +573,6 @@ def plot4():
     plot_url = base64.b64encode(buf.read()).decode()
 
     return {'plot_url': plot_url}
-
 
 @app.route('/plot3', methods=['GET'])
 def plot3():
@@ -620,7 +685,6 @@ def plot6():
     plot_url = base64.b64encode(buf.read()).decode()
 
     return {'plot_url': plot_url}
-
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
