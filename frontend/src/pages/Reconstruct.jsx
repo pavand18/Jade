@@ -121,6 +121,7 @@ import Input from '../components/Input';
 import Allsteps from '../components/Allsteps';
 import './Reconstruct.css'; // Import CSS file for styling
 import Plot5 from '../components/Plot5';
+import Rinput from '../components/Rinput';
 
 
 const Reconstruct = () => {
@@ -211,11 +212,12 @@ const Reconstruct = () => {
           {/* <button className="data-button" onClick={downloadCsv}>
                 Download CSV
               </button> */}
-            <button className="data-button" onClick={togglePlot}>
+            {/* <button className="data-button" onClick={togglePlot}>
             {showPlot ? 'Hide Plot' : 'Show Plot'}
-          </button>
+          </button> */}
         </div>
-        {showPlot && <Plot5 />}
+        {/* {showPlot && <Plot5 />} */}
+        <Rinput />
       </div>
   );
  };

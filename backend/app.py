@@ -39,6 +39,8 @@ fake_output_file = 'output.csv'
 input_n2 = 0
 input_n1 = 0
 input_n3 = 0
+input_n4 = 0
+input_n5 = 0
 
 def add_row_to_csv(input_file, output_file):
     # Read the existing CSV file
@@ -271,6 +273,67 @@ def submit3():
         return jsonify({"message": "Number received successfully"}), 200
     else:
         return jsonify({"error": "No number provided"}), 400
+
+@app.route('/submit4', methods=['POST'])
+def submit4():
+    data = request.get_json()
+    number = data.get('number')
+    if number:
+        global input_n4 
+        input_n4 = number    
+        # Here you can process the number as needed
+        print(f"Received number: {input_n4}")
+        return jsonify({"message": "Number received successfully"}), 200
+    else:
+        return jsonify({"error": "No number provided"}), 400
+
+@app.route('/rcol', methods=['GET'])
+def rcol():
+    file_to_send = reconstructed_file
+    if not file_to_send:                
+        return jsonify({"error": "No filename provided"}), 400
+
+    X = pd.read_csv(reconstructed_file)
+    colum = int(input_n4)
+    column_number = X.iloc[:, colum] # Adjust the index if the column is not the 4th one
+    limited_data = column_number[:1000].tolist()
+
+    return jsonify({
+        "success": True,
+        "message": "Data fetched successfully",
+        "data": limited_data
+    })
+
+@app.route('/submit5', methods=['POST'])
+def submit5():
+    data = request.get_json()
+    number = data.get('number')
+    if number:
+        global input_n5 
+        input_n5 = number    
+        # Here you can process the number as needed
+        print(f"Received number: {input_n5}")
+        return jsonify({"message": "Number received successfully"}), 200
+    else:
+        return jsonify({"error": "No number provided"}), 400
+
+@app.route('/Ocol', methods=['GET'])
+def Ocol():
+    file_to_send = g_original_file
+    if not file_to_send:                
+        return jsonify({"error": "No filename provided"}), 400
+
+    X = pd.read_csv(g_original_file)
+    colum = int(input_n5)
+    column_number = X.iloc[:, colum] # Adjust the index if the column is not the 4th one
+    limited_data = column_number[:1000].tolist()
+
+    return jsonify({
+        "success": True,
+        "message": "Data fetched successfully",
+        "data": limited_data
+    })
+
 
 @app.route('/dopca', methods=['GET'])
 def dopca():

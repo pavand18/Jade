@@ -283,6 +283,7 @@ import Plot2 from '../components/Plot2';
 import Plot1 from '../components/Plot1';
 import Plot3 from '../components/Plot3';
 import './Original.css'; // Import CSS file for styling
+import Oinput from '../components/Oinput';
 
 
 const Original = () => {
@@ -380,14 +381,14 @@ const Original = () => {
       )}
       <div>
         {/* <button className="download-button" onClick={downloadCsv}>Download CSV</button> */}
-        <button className="data-button" onClick={togglePlot}>
+        {/* <button className="data-button" onClick={togglePlot}>
           {showPlot ? 'Hide Plot' : 'Show Plot'}
         </button> 
         <button className="data-button" onClick={toggleit}>
           {comparePlot ? 'Compare Plot' : 'Compare Plot'}
-        </button>
+        </button> */}
       </div>
-      {showPlot && (
+      {/* {showPlot && (
          <div className="plot-container2">
            <div className="plot">
              <Plot1 />
@@ -397,7 +398,8 @@ const Original = () => {
            </div>
          </div>
        )}
-      {comparePlot && <Plot3 /> }
+      {comparePlot && <Plot3 /> } */}
+      <Oinput />
     </div>
  );
 };

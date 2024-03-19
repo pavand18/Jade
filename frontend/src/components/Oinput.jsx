@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LineChart from '../pages/LineChart';
-import Allsteps from './Allsteps';
-import Pca from '../pages/Pca';
+import Col1 from './Col1';
+import Ocol from './Ocol';
 
-const NumberInputForm = () => {
+const Oinput = () => {
  const [number, setNumber] = useState('');
  const navigate = useNavigate();
  const [showPlot, setShowPlot] = useState(false);
+ // Add a new state to act as a key for Col1
  const [col1Key, setCol1Key] = useState(0);
-
 
  const handleSubmit = async (event) => {
     event.preventDefault();
-    const response = await fetch('http://localhost:5000/submit3', {
+    const response = await fetch('http://localhost:5000/submit5', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -22,7 +22,7 @@ const NumberInputForm = () => {
     });
 
     if (response.ok) {
-      // navigate('/dashboard/pca');
+      // Increment the col1Key to force a re-render of Col1
       setCol1Key(prevKey => prevKey + 1);
       setShowPlot(true);
     } else {
@@ -30,25 +30,23 @@ const NumberInputForm = () => {
     }
  };
 
-
  return (
     <>
-        {/* <Linechart /> */}
-        <Allsteps />
-        <form onSubmit={handleSubmit}>
+      {/* <Linechart /> */}
+      <form onSubmit={handleSubmit}>
         <input
-            type="number"
-            placeholder="Number of PC"
-            value={number}
-            onChange={(e) => setNumber(e.target.value)}
+          type="number"
+          placeholder="Plot : Column Number"
+          value={number}
+          onChange={(e) => setNumber(e.target.value)}
         />
         <button type="submit">Submit</button>
-        </form>
-        <div>
-          {showPlot && <Pca key={col1Key} />}
-        </div>
-    </>
+      </form>
+      <div>
+          {showPlot && <Ocol key={col1Key}/>}
+      </div>
+    </>     
  );
 };
 
-export default NumberInputForm;
+export default Oinput;
