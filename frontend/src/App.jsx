@@ -8,9 +8,9 @@ import Pca from './pages/Pca'
 import Reconstruct from './pages/Reconstruct'
 import Original from './pages/Original'
 import Topbar from './components/Topbar'
-import NumberInputForm from './components/NumberInputForm'
+import NumberInputForm from './components/PcaInput'
 import LineChart from './pages/LineChart'
-import Col1 from './components/Col1'
+import Col1 from './components/Dcol'
 
 function App() {
   return (
@@ -27,7 +27,6 @@ function App() {
           <Route path="/dashboard/pca" element={<Pca />} />
           <Route path="/dashboard/reconstruct" element={<Reconstruct />} />
           <Route path="/dashboard/col1" element={<Col1 /> } />
-          
           <Route path="/dashboard/original" element={<Original />} />
         </Routes>
       </Router>

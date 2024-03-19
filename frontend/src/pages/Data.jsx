@@ -186,7 +186,7 @@ import axios from 'axios'; // Import axios
 import Allsteps from '../components/Allsteps';
 import Plot1 from '../components/Plot1';
 import './Data.css'; // Import CSS file for styling
-import PlotInput from '../components/PlotInput';
+import Dinput from '../components/Dinput';
 
 
 const Data = () => {
@@ -284,7 +284,7 @@ const Data = () => {
         {/* </button> */}
       </div>
       {/* {showPlot && <Plot1 />} */}
-      <PlotInput />
+      <Dinput />
     </div>
   );
 };

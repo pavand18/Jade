@@ -21,7 +21,7 @@ const Ocol = () => {
  // Prepare data for the plot
  const plotData = [
     {
-      x: Array.from({ length: data.length }, (_, i) => i + 1),
+      x: Array.from({ length: data.length }, (_, i) => (i + 1) * 0.3),
       y: data,
       mode: 'lines+markers',
       type: 'scatter',
@@ -39,9 +39,9 @@ const Ocol = () => {
 
  // Layout options
  const layout = {
-    title: 'Data from Backend',
+    title: 'Output Data',
     xaxis: {
-      title: 'Time',
+      title: 'Time (s)',
       showgrid: false,
       zeroline: false
     },

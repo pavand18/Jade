@@ -334,6 +334,16 @@ def Ocol():
         "data": limited_data
     })
 
+@app.route('/var', methods=['GET'])
+def var():
+    eigenvalues = g_eigenvalues
+    eigenvalues_list = eigenvalues.tolist()
+
+    return jsonify({
+        "success": True,
+        "message": "Data fetched successfully",
+        "data": eigenvalues_list
+    })
 
 @app.route('/dopca', methods=['GET'])
 def dopca():
@@ -636,6 +646,9 @@ def plot4():
     plot_url = base64.b64encode(buf.read()).decode()
 
     return {'plot_url': plot_url}
+
+
+
 
 @app.route('/plot3', methods=['GET'])
 def plot3():

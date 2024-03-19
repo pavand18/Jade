@@ -122,8 +122,8 @@ import Allsteps from '../components/Allsteps';
 import './Standardise.css'; // Import CSS file for styling
 import Plot6 from '../components/Plot6';
 import LineChart from './LineChart';
-import PlotInput from '../components/PlotInput';
-import PlotInput2 from '../components/PlotInput2';
+import PlotInput from '../components/Dinput';
+import Sinput from '../components/Sinput';
 
 
 const Standardise = () => {
@@ -222,7 +222,7 @@ return (
       </button> */} 
     </div>
     {/* {showPlot && <Plot6 />} */}
-      <PlotInput2 />
+      <Sinput />
     </div>
 );
 };

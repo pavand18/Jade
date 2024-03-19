@@ -119,9 +119,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Import axios
 import Allsteps from '../components/Allsteps';
 import './Pca.css'; // Import CSS file for styling
-import Plot4 from '../components/Plot4';
-import NumberInputForm from '../components/NumberInputForm';
+import Plot4 from '../components/Pcol';
+import PcaInput from '../components/PcaInput';
 import LineChart from './LineChart';
+import Pcol from '../components/Pcol';
+
 
 const Pca = () => {
   const [csvData, setCsvData] = useState(null);
@@ -218,7 +220,7 @@ return (
           {showPlot ? 'Hide Plot' : 'Show Plot'}
         </button>
       </div>
-      {showPlot && <Plot4 />}
+      {showPlot && <Pcol />}
     </div>
 );
 };

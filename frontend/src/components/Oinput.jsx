@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LineChart from '../pages/LineChart';
-import Col1 from './Col1';
+import Col1 from './Dcol';
 import Ocol from './Ocol';
 
 const Oinput = () => {
