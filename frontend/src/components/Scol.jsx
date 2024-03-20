@@ -37,7 +37,6 @@ const Scol = () => {
     }
  ];
 
-
  // Layout options
  const layout = {
     title: 'Standardise Data',
@@ -60,18 +59,30 @@ const Scol = () => {
     showlegend: true
  };
 
+ // Inline styles for centering and adding a light border
+ const containerStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    // border: '1px solid #ccc', // Light border
+    padding: '20px', // Padding inside the border
+    margin: '20px auto', // Centering the container
+    maxWidth: '80%', // Optional: limit the maximum width
+ };
+
  return (
-    <Plot
-      data={plotData}
-      layout={layout}
-      config={{
-        displayModeBar: true,
-        responsive: true,
-        scrollZoom: true
-      }}
-    />
+    <div style={containerStyle}>
+      <Plot
+        data={plotData}
+        layout={layout}
+        config={{
+          displayModeBar: true,
+          responsive: true,
+          scrollZoom: true
+        }}
+      />
+    </div>
  );
 };
 
 export default Scol;
-

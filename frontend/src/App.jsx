@@ -9,7 +9,7 @@ import Reconstruct from './pages/Reconstruct'
 import Original from './pages/Original'
 import Topbar from './components/Topbar'
 import NumberInputForm from './components/PcaInput'
-import LineChart from './pages/LineChart'
+// import LineChart from './pages/LineChart'
 import Col1 from './components/Dcol'
 
 function App() {

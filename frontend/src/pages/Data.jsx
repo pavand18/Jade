@@ -63,9 +63,9 @@ const Data = () => {
       ) : (
         <p>Loading CSV data...</p>
       )}
-      <div className="button-container">
+      {/* <div className="button-container">
         
-      </div>
+      </div> */}
       <Dinput />
     </div>
   );

@@ -4,6 +4,7 @@
   
   .data-section {
     margin-top: 20px; /* Add some top margin for spacing */
+    margin-bottom: 10px;
   }
   
   .data-table {

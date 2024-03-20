@@ -35,12 +35,13 @@ const Standardise = () => {
       
   };
 
+
 return (
   <div className="standardise-container">
     <Allsteps />
     {/* <LineChart /> */}
     {csvData ? (
-      <div className="data-section">
+      <div className="data-section" >
         <h2>Standardise Data:</h2>
         <table className="data-table">
           <thead>
