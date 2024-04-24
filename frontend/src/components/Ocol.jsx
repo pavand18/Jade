@@ -27,7 +27,7 @@ const Ocol = () => {
       y: data,
       mode: 'lines+markers',
       type: 'scatter',
-      name: 'Data',
+      name: 'Output',
       marker: {
         color: 'rgb(219, 64, 82)',
         size: 1
@@ -42,7 +42,7 @@ const Ocol = () => {
       y: val,
       mode: 'lines+markers',
       type: 'scatter',
-      name: 'Val',
+      name: 'Input',
       marker: {
         color: 'rgb(85, 219, 82)', // Different color for the second trace
         size: 1

@@ -28,7 +28,7 @@ modified_file = ''
 standardised_file = ''  
 compress_file = ''
 g_X_pca = ''
-g_principal_components = ''
+g_principal_components = []
 g_X = ''
 reconstructed_file = ''
 g_mean_std_file = ''
@@ -106,7 +106,6 @@ def get_data():
 
     # Get the first 4 rows of the DataFrame
     first_four_rows = X.head(4).to_dict(orient='records')
-
     return jsonify({
         "success": True,
         "message": "File uploaded and processed successfully",
@@ -158,6 +157,8 @@ def standardise_data():
     X_standardized_data = pd.read_csv(fake_output_file)
 
     first_four_rows = X_standardized_data.head(4).to_dict(orient='records')
+    # first_four_rows = X_standardized_data(4).apply(lambda row: row[:20].to_dict(), axis=1).tolist()
+
     return jsonify({
         "success": True,
         "message": "File uploaded and processed successfully",
@@ -391,6 +392,8 @@ def dopca():
     X_pca_data = pd.read_csv(fake_output_file)
 
     first_four_rows = X_pca_data.head(4).to_dict(orient='records')
+    # first_four_rows = X_pca_data(4).apply(lambda row: row[:20].to_dict(), axis=1).tolist()
+
     return jsonify({
         "success": True,
         "message": "File uploaded and processed successfully",
@@ -450,6 +453,7 @@ def reconstruct():
     X_reconstructed_data = pd.read_csv(fake_output_file)
 
     first_four_rows = X_reconstructed_data.head(4).to_dict(orient='records')
+    # first_four_rows = X_reconstructed_data(4).apply(lambda row: row[:20].to_dict(), axis=1).tolist()
     return jsonify({
         "success": True,
         "message": "File uploaded and processed successfully",
@@ -514,6 +518,8 @@ def original():
     X_original_data = pd.read_csv(fake_output_file)
 
     first_four_rows = X_original_data.head(4).to_dict(orient='records')
+    # first_four_rows = X_original_data(4).apply(lambda row: row[:20].to_dict(), axis=1).tolist()
+
     return jsonify({
         "success": True,
         "message": "File uploaded and processed successfully",
