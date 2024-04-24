@@ -24,9 +24,11 @@ app.config['UPLOAD_FOLDER2'] = UPLOAD_FOLDER2
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-modified_file = ''
+
+input_modified_file = ''
 standardised_file = ''  
 compress_file = ''
+pc_data_file = ''
 g_X_pca = ''
 g_principal_components = []
 g_X = ''
@@ -42,6 +44,7 @@ input_n3 = 0
 input_n4 = 0
 input_n5 = 0
 
+# for sending data in order...
 def add_row_to_csv(input_file, output_file):
     # Read the existing CSV file
     with open(input_file, 'r', newline='') as csvfile:
@@ -76,16 +79,16 @@ def upload_file():
 
         # Process the file: remove the first column
         data = pd.read_csv(file_path) 
-        X = data.iloc[:, 1:] 
+        X = data.iloc[:, 0:] 
         processed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'processed_' + filename)
         X.to_csv(processed_file_path, index=False)
 
-        global modified_file
-        modified_file = processed_file_path #contains output csv
+        global input_modified_file
+        input_modified_file = processed_file_path #contains output csv
         global g_X 
         g_X = X 
 
-        # add_row_to_csv(modified_file, fake_output_file)
+        # add_row_to_csv(input_modified_file, fake_output_file)
 
         # Return the shape and the first 4 rows of the processed data
         return jsonify({
@@ -93,10 +96,11 @@ def upload_file():
             "message": "File uploaded and processed successfully",
         })
 
+# fetches the input data...
 @app.route('/data', methods=['GET'])
 def get_data():
-    file_to_send = modified_file # Assuming the filename is passed as a query parameter
-    add_row_to_csv(modified_file, fake_output_file)
+    file_to_send = input_modified_file # Assuming the filename is passed as a query parameter
+    add_row_to_csv(input_modified_file, fake_output_file)
 
     if not file_to_send:
         return jsonify({"error": "No filename provided"}), 999
@@ -112,22 +116,9 @@ def get_data():
         "data": first_four_rows
     })
 
-# @app.route('/data', methods=['GET'])
-# def get_data():
-#     file_to_send = modified_file # taking input
-
-#     if not file_to_send:
-#         return jsonify({"error": "No filename provided"}), 999
-    
-#     X = pd.read_csv(file_to_send) 
-#     filename = os.path.basename(modified_file)
-
-#     # return send_file(file_to_send, as_attachment=True)
-#     return send_from_directory('uploads', filename, as_attachment=True)
-
 @app.route('/standardise', methods=['GET'])
 def standardise_data():
-    input_file = modified_file      
+    input_file = input_modified_file      
     if not input_file:
         return jsonify({"error": "No data provided"}), 404
 
@@ -138,11 +129,11 @@ def standardise_data():
     X_standardized, means, stds = standardize_data(data)
 
 
-    filename = os.path.basename(modified_file)
+    filename = os.path.basename(input_modified_file)
     standardise_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "standardise_" + filename)
-    X_standardized.to_csv(standardise_file_path, index=False)
+    X_standardized.to_csv(standardise_file_path, index=False, float_format='%.4f')
 
-    filename = os.path.basename(modified_file)
+    filename = os.path.basename(input_modified_file)
     mean_std_file = os.path.join(app.config['UPLOAD_FOLDER'], "mean_" + filename)
     stats_df = pd.DataFrame({'Mean': means, 'Standard_Deviation': stds})
     stats_df.to_csv(mean_std_file)
@@ -165,44 +156,13 @@ def standardise_data():
         "data": first_four_rows
     })
 
-# @app.route('/standardise', methods=['GET'])
-# def standardise_data():
-#     input_file = modified_file      
-#     if not input_file:
-#         return jsonify({"error": "No data provided"}), 404
-
-#     data = pd.read_csv(input_file)
-#     print(f"IInput1 filename: {input_file}") # Debugging line
-
-#     # Standardize the data
-#     X_standardized, means, stds = standardize_data(data)
-
-
-#     filename = os.path.basename(modified_file)
-#     standardise_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "standardise_" + filename)
-#     X_standardized.to_csv(standardise_file_path, index=False)
-
-#     filename = os.path.basename(modified_file)
-#     mean_std_file = os.path.join(app.config['UPLOAD_FOLDER'], "mean_" + filename)
-#     stats_df = pd.DataFrame({'Mean': means, 'Standard_Deviation': stds})
-#     stats_df.to_csv(mean_std_file)
-
-#     global standardised_file
-#     standardised_file = standardise_file_path #global file
-#     global g_mean_std_file
-#     g_mean_std_file = mean_std_file
-
-#     f_filename = os.path.basename(standardise_file_path)
-#     # return send_file(standardised_file, as_attachment=True)
-#     return send_from_directory('uploads', f_filename, as_attachment=True)
-
 def standardize_data(data):
     means = data.mean(axis=0)
     stds = data.std(axis=0)
     X_standardized = (data - means) / stds
     return X_standardized, means, stds
 
-@app.route('/submit1', methods=['POST'])
+@app.route('/submit1', methods=['POST'])    #input
 def submit1():
     data = request.get_json()
     number = data.get('number')
@@ -215,13 +175,13 @@ def submit1():
     else:
         return jsonify({"error": "No number provided"}), 400
 
-@app.route('/col1', methods=['GET'])
+@app.route('/col1', methods=['GET'])    #input plot
 def col1():
-    file_to_send = modified_file
+    file_to_send = input_modified_file
     if not file_to_send:
         return jsonify({"error": "No filename provided"}), 400
     
-    X = pd.read_csv(modified_file)
+    X = pd.read_csv(input_modified_file)
     colum = int(input_n1)
     column_number = X.iloc[:, colum] # Adjust the index if the column is not the 4th one
     limited_data = column_number[:1000].tolist()
@@ -233,7 +193,7 @@ def col1():
         "data2": limited_data
     })
 
-@app.route('/submit2', methods=['POST'])
+@app.route('/submit2', methods=['POST'])    #standardise
 def submit2():
     data = request.get_json()
     number = data.get('number')
@@ -246,7 +206,7 @@ def submit2():
     else:
         return jsonify({"error": "No number provided"}), 400
 
-@app.route('/col2', methods=['GET'])
+@app.route('/col2', methods=['GET'])    #stand plot
 def col2():
     file_to_send = standardised_file
     if not file_to_send:                
@@ -263,7 +223,7 @@ def col2():
         "data": limited_data
     })
 
-@app.route('/submit3', methods=['POST'])
+@app.route('/submit3', methods=['POST'])    #pca
 def submit3():
     data = request.get_json()
     number = data.get('number')
@@ -276,7 +236,7 @@ def submit3():
     else:
         return jsonify({"error": "No number provided"}), 400
 
-@app.route('/submit4', methods=['POST'])
+@app.route('/submit4', methods=['POST'])    #reconstruct
 def submit4():
     data = request.get_json()
     number = data.get('number')
@@ -289,7 +249,7 @@ def submit4():
     else:
         return jsonify({"error": "No number provided"}), 400
 
-@app.route('/rcol', methods=['GET'])
+@app.route('/rcol', methods=['GET'])    #reconstruct plot
 def rcol():
     file_to_send = reconstructed_file
     if not file_to_send:                
@@ -306,7 +266,7 @@ def rcol():
         "data": limited_data
     })
 
-@app.route('/submit5', methods=['POST'])
+@app.route('/submit5', methods=['POST'])    #output
 def submit5():
     data = request.get_json()
     number = data.get('number')
@@ -319,7 +279,7 @@ def submit5():
     else:
         return jsonify({"error": "No number provided"}), 400
 
-@app.route('/Ocol', methods=['GET'])
+@app.route('/Ocol', methods=['GET'])    #output plot
 def Ocol():
     file_to_send = g_original_file
     if not file_to_send:                
@@ -330,7 +290,7 @@ def Ocol():
     column_number = X.iloc[:, colum] # Adjust the index if the column is not the 4th one
     limited_data = column_number[:1000].tolist()
 
-    X2 = pd.read_csv(modified_file)
+    X2 = pd.read_csv(input_modified_file)
     colum2 = int(input_n5)
     column_number2 = X2.iloc[:, colum2] # Adjust the index if the column is not the 4th one
     limited_data2 = column_number2[:1000].tolist()
@@ -342,7 +302,7 @@ def Ocol():
         "data2": limited_data2
     })
 
-@app.route('/var', methods=['GET'])
+@app.route('/var', methods=['GET'])     #var plot
 def var():
     eigenvalues = g_eigenvalues
     eigenvalues_list = eigenvalues.tolist()
@@ -371,66 +331,39 @@ def dopca():
 
     n_components = int(input_n3)  # Adjust as needed
     principal_components = eigenvectors[:, :n_components]
+    pc_data = pd.DataFrame(data=principal_components, columns=[f'PC{i+1}' for i in range(n_components)])
+
+    filename = os.path.basename(input_modified_file)
+    pc_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "pc_data_" + filename)
+    pc_data.to_csv(pc_file_path, index=False)
 
     X_pca = np.dot(X_standardized, principal_components)
     compressed_data = pd.DataFrame(data=X_pca, columns=[f'PC{i+1}' for i in range(n_components)])
 
-    filename = os.path.basename(modified_file)
+    filename = os.path.basename(input_modified_file)
     compressed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "compressed_" + filename)
-    compressed_data.to_csv(compressed_file_path, index=False)
+    compressed_data.to_csv(compressed_file_path, index=False, float_format='%.4f')
 
     global compress_file
     compress_file = compressed_file_path #global file
+    global pc_data_file
+    pc_data_file = pc_file_path
     global g_X_pca 
     g_X_pca = X_pca
     global g_principal_components    
     g_principal_components = principal_components #global file
 
-    # return send_file(compress_file, as_attachment=True)
 
     add_row_to_csv(compress_file, fake_output_file)
     X_pca_data = pd.read_csv(fake_output_file)
 
     first_four_rows = X_pca_data.head(4).to_dict(orient='records')
-    # first_four_rows = X_pca_data(4).apply(lambda row: row[:20].to_dict(), axis=1).tolist()
-
     return jsonify({
         "success": True,
         "message": "File uploaded and processed successfully",
         "data": first_four_rows
     })
 
-# @app.route('/dopca', methods=['GET'])
-# def dopca():
-#     X_standardized = pd.read_csv(standardised_file)
-#     cov_matrix = np.cov(X_standardized, rowvar=False)
-#     cov_matrix.shape
-#     eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
-#     sorted_indices = np.argsort(eigenvalues)[::-1]
-#     eigenvalues = eigenvalues[sorted_indices]
-#     eigenvectors = eigenvectors[:, sorted_indices]
-
-#     global g_eigenvalues
-#     g_eigenvalues = eigenvalues
-
-#     n_components = 7  # Adjust as needed
-#     principal_components = eigenvectors[:, :n_components]
-
-#     X_pca = np.dot(X_standardized, principal_components)
-#     compressed_data = pd.DataFrame(data=X_pca, columns=[f'PC{i+1}' for i in range(n_components)])
-
-#     filename = os.path.basename(modified_file)
-#     compressed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "compressed_" + filename)
-#     compressed_data.to_csv(compressed_file_path, index=False)
-
-#     global compress_file
-#     compress_file = compressed_file_path #global file
-#     global g_X_pca 
-#     g_X_pca = X_pca
-#     global g_principal_components    
-#     g_principal_components = principal_components #global file
-
-#     return send_file(compress_file, as_attachment=True)
 
 @app.route('/reconstruct', methods=['GET'])
 def reconstruct():
@@ -441,7 +374,7 @@ def reconstruct():
     reconstructed_data = np.dot(X_pca, principal_components.T)
     reconstructed_df = pd.DataFrame(reconstructed_data, columns=X.columns)
 
-    filename = os.path.basename(modified_file)
+    filename = os.path.basename(input_modified_file)
     reconstructed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "reconstructed_" + filename)
     reconstructed_df.to_csv(reconstructed_file_path, index=False)
 
@@ -482,7 +415,7 @@ def original():
     # Output CSV file path for original data
     # output_csv_file = 'original_data.csv'
 
-    filename = os.path.basename(modified_file)
+    filename = os.path.basename(input_modified_file)
     original_csv_file = os.path.join(app.config['UPLOAD_FOLDER'], "original_" + filename)
     original_data.to_csv(original_csv_file, index=False)
     global g_original_file 
@@ -548,7 +481,7 @@ def original():
 #     # Output CSV file path for original data
 #     # output_csv_file = 'original_data.csv'
 
-#     filename = os.path.basename(modified_file)
+#     filename = os.path.basename(input_modified_file)
 #     original_csv_file = os.path.join(app.config['UPLOAD_FOLDER'], "original_" + filename)
 #     original_data.to_csv(original_csv_file, index=False)
 #     global g_original_file 
@@ -588,7 +521,7 @@ def reverse_standardization(reconstructed_data, means, stds):
 #adding plots..
 @app.route('/plot1', methods=['GET'])
 def plot1():
-    original_data_toplot = modified_file
+    original_data_toplot = input_modified_file
     original_column_data = pd.read_csv(original_data_toplot)
 
     # specify col. num. here
@@ -662,7 +595,7 @@ def plot4():
 
 @app.route('/plot3', methods=['GET'])
 def plot3():
-    file_path_1 = modified_file
+    file_path_1 = input_modified_file
     file_path_2 = g_original_file
     print(f"AAAA filename: {file_path_1}") # Debugging line
     print(f"BBBB filename: {file_path_2}") # Debugging line
