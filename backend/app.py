@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, send_file, send_from_directory
+import zipfile
+from flask import Flask, request, jsonify, send_file, send_from_directory, make_response
 import pandas as pd
 import numpy as np
 from flask_cors import CORS
@@ -32,6 +33,7 @@ pc_data_file = ''
 g_X_pca = ''
 g_principal_components = []
 g_X = ''
+g_X_standardized = pd.DataFrame({})
 reconstructed_file = ''
 g_mean_std_file = ''
 g_original_file = ''
@@ -363,6 +365,71 @@ def dopca():
         "message": "File uploaded and processed successfully",
         "data": first_four_rows
     })
+
+@app.route('/download-files', methods=['GET'])
+def download_files():
+    global compress_file, pc_data_file, g_mean_std_file
+    file_paths = [compress_file, pc_data_file, g_mean_std_file]
+
+    # Create a zip file in memory
+    zip_data = io.BytesIO()
+    with zipfile.ZipFile(zip_data, mode='w') as zip_file:
+        for file_path in file_paths:
+            if os.path.isfile(file_path):
+                filename = os.path.basename(file_path)
+                zip_file.write(file_path, filename)
+
+    zip_data.seek(0)
+
+    # Create a response object with the zip file data
+    response = make_response(zip_data.getvalue())
+    response.headers['Content-Type'] = 'application/zip'
+    response.headers['Content-Disposition'] = 'attachment; filename=files.zip'
+
+    return response
+
+from flask import request
+import os
+
+@app.route('/get-file-sizes', methods=['GET'])
+def get_file_sizes():
+    global compress_file, pc_data_file, g_mean_std_file, input_modified_file
+
+    input_file_size = os.path.getsize(input_modified_file)
+    compressed_files_sizes = {
+        'compress_file': os.path.getsize(compress_file),
+        'pc_data_file': os.path.getsize(pc_data_file),
+        'g_mean_std_file': os.path.getsize(g_mean_std_file),
+    }
+
+    return jsonify({
+        'inputFileSize': input_file_size,
+        'compressedFilesSizes': compressed_files_sizes,
+    })
+
+@app.route('/calculate-rmse', methods=['GET'])
+def calculate_rmse():
+    input_file = input_modified_file
+    output_file = g_original_file
+
+    # Load original data
+    original_data = pd.read_csv(input_file).values
+
+    # Load reconstructed data
+    reconstructed_data = pd.read_csv(output_file).values
+
+    # Initialize variable to store total squared error
+    total_squared_error = 0
+
+    # Calculate squared error for each column
+    for i in range(original_data.shape[1]):
+        squared_error = np.sum((original_data[:, i] - reconstructed_data[:, i]) ** 2)
+        total_squared_error += squared_error
+
+    # Calculate RMSE (square root of average squared error)
+    rmse = np.sqrt(total_squared_error / (original_data.shape[0] * original_data.shape[1]))
+
+    return jsonify({'rmse': float(rmse)})  
 
 @app.route('/reconstruct', methods=['GET'])
 def reconstruct():

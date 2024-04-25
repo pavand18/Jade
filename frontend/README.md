@@ -10,7 +10,6 @@ Currently, two official plugins are available:
 
 
 make 3 downloadable files on pca page
-show that reconstruction page takes 3  input files
-
 error 
-compression ratio
+compression ratio (need css)
+

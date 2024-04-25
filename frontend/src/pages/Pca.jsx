@@ -16,6 +16,22 @@ const Pca = () => {
     fetchCsvData();
   }, []);
 
+  const handleDownloadFiles = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/download-files');
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', 'files.zip');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      console.error('There was a problem downloading the files:', error);
+    }
+  };
+
   const fetchCsvData = async () => {
 
 
@@ -64,10 +80,13 @@ return (
       <p>Loading CSV data...</p>
     )}
     <div className="button-container">
-          <button className="data-button" onClick={togglePlot}>
+        <button className="data-button" onClick={handleDownloadFiles}>
+          Download Compressed Files (3)
+        </button>   
+        <button className="data-button" onClick={togglePlot}>
           {showPlot ? 'Hide Plot' : 'Show Plot'}
         </button>
-      </div>
+    </div>
       {showPlot && <Pcol />}
     </div>
 );
