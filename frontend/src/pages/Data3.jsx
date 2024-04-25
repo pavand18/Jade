@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Allsteps3 from '../components/Allsteps3';
 import './Data.css'; // Import CSS file for styling
-import Dinput from '../components/Dinput';
+import Dinput3 from '../components/Dinput3';
 
 
 const Data3 = () => {
@@ -65,7 +65,7 @@ const Data3 = () => {
       {/* <div className="button-container">
         
       </div> */}
-      <Dinput />
+      <Dinput3 />
     </div>
   );
 };

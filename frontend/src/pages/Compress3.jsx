@@ -35,6 +35,21 @@ const Compress = () => {
       
   };
 
+  const handleDownloadFiles = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/download-files3');
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', 'dct_compressed_files.zip');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      console.error('There was a problem downloading the files:', error);
+    }
+  };
 
 return (
   <div className="standardise-container">
@@ -66,9 +81,11 @@ return (
       <p>Loading CSV data...</p>
     )}
     <div className="button-container">
-      
+        <button className="data-button" onClick={handleDownloadFiles}>
+          Download Compressed Files (2)
+        </button> 
     </div>
-      <Sinput />
+      {/* <Sinput /> */}
     </div>
 );
 };

@@ -9,7 +9,11 @@ Currently, two official plugins are available:
 
 
 
-make 3 downloadable files on pca page
-error 
-compression ratio (need css)
+css wherever
+
+step 4 
+*input
+reconstruction
+
+
 

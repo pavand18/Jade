@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Allsteps3 from '../components/Allsteps3';
 import './Reconstruct.css'; // Import CSS file for styling
 import Rinput from '../components/Rinput';
+import Oinput3 from '../components/Oinput3';
 
 
 const Reconstruct3 = () => {
@@ -32,6 +33,8 @@ const Reconstruct3 = () => {
     }
 
   };
+
+  
  
   return (
      <div className="reconstruct-container">
@@ -62,8 +65,9 @@ const Reconstruct3 = () => {
          <p>Loading CSV data...</p>
        )}
        <div className="button-container">
-         
+          
         </div>
+        <Oinput3 />
       </div>
   );
  };
