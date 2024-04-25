@@ -42,7 +42,7 @@ const FileUpload = () => {
       </div> */}
       <Link to="/upload1" className="home-link">pca compression</Link>
       <Link to="/upload2" className="home-link">pca reconstruction</Link>
-      <Link to="/upload3" className="home-link">dct</Link>
+      <Link to="/upload3" className="home-link">dct compression</Link>
       <Link to="/upload4" className="home-link">dct</Link>
     </div>
   );

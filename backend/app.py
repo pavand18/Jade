@@ -14,6 +14,7 @@ from collections import OrderedDict
 import csv
 from flask import request
 import os
+from scipy.fft import dct, idct
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}}) # Enable CORS for React frontend
@@ -29,14 +30,17 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 
 input_modified_file = ''
+g_input_file_3 = ''
 standardised_file = ''  
 compress_file = ''
+g_compress_file3 = ''
 pc_data_file = ''
 g_X_pca = ''
 g_principal_components = []
 g_X = ''
 g_X_standardized = pd.DataFrame({})
 reconstructed_file = ''
+g_reconstructed_file_3 = ''
 g_mean_std_file = ''
 g_original_file = ''
 g_eigenvalues = ''
@@ -100,10 +104,50 @@ def upload_file():
             "message": "File uploaded and processed successfully",
         })
 
+@app.route('/upload3', methods=['POST'])
+def upload_file3():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 401
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 402
+    if file:
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path) #contains input csv
+
+        data = pd.read_csv(file_path) 
+
+        global g_input_file_3
+        g_input_file_3 = file_path
+
+        return jsonify({
+            "success": True,
+            "message": "File uploaded and processed successfully",
+        })
 
 # fetches the input data...
-@app.route('/data', methods=['GET'])
+@app.route('/data3', methods=['GET'])
 def get_data():
+    file_to_send = g_input_file_3 # Assuming the filename is passed as a query parameter
+    add_row_to_csv(file_to_send, fake_output_file)
+
+    if not file_to_send:
+        return jsonify({"error": "No filename provided"}), 999
+    
+    X = pd.read_csv(fake_output_file)
+    filename = os.path.basename(file_to_send)
+
+    # Get the first 4 rows of the DataFrame
+    first_four_rows = X.head(4).to_dict(orient='records')
+    return jsonify({
+        "success": True,
+        "message": "File uploaded and processed successfully",
+        "data": first_four_rows
+    })
+
+@app.route('/data', methods=['GET'])
+def get_data3():
     file_to_send = input_modified_file # Assuming the filename is passed as a query parameter
     add_row_to_csv(input_modified_file, fake_output_file)
 
@@ -148,7 +192,6 @@ def standardise_data():
     global g_mean_std_file
     g_mean_std_file = mean_std_file
 
-
     add_row_to_csv(standardise_file_path, fake_output_file)
     X_standardized_data = pd.read_csv(fake_output_file)
 
@@ -161,11 +204,110 @@ def standardise_data():
         "data": first_four_rows
     })
 
+
 def standardize_data(data):
     means = data.mean(axis=0)
     stds = data.std(axis=0)
     X_standardized = (data - means) / stds
     return X_standardized, means, stds
+
+@app.route('/compress3', methods=['GET'])
+def compression3():
+    input_file = g_input_file_3
+    pca_data = pd.read_csv(input_file)
+    no_of_columns = pca_data.columns
+
+    # Normalize data
+    mean = np.mean(pca_data.values, axis=0)
+    std = np.std(pca_data.values, axis=0)
+    normalized_data = (pca_data.values - mean) / std
+
+    # Initialize array to store compressed data
+    compressed_data = np.zeros_like(pca_data.values)
+
+    # Apply compression to each column separately
+    for i in range(pca_data.shape[1]):
+        # Apply DCT transformation to the current column
+        transformed_column = dct(normalized_data[:, i], norm='ortho')
+        
+        # Define quantization threshold
+        threshold = np.percentile(np.abs(transformed_column), 100 - 75) # Adjust as needed
+        
+        # Quantize the coefficients
+        quantized_coeffs = transformed_column * (np.abs(transformed_column) >= threshold)
+        
+        # Save compressed data for the current column
+        compressed_data[:, i] = quantized_coeffs
+
+    # Save the compressed data to a CSV file
+    compressed_pca_data = pd.DataFrame(compressed_data, columns=no_of_columns)
+    compressed_pca_data.to_csv("compressed_pca_data.csv", index=False, float_format='%.2f')
+    filename = os.path.basename(input_file)
+    compress_file3 = os.path.join(app.config['UPLOAD_FOLDER'], "compress3_" + filename)
+
+    # Create a DataFrame to store mean and std values
+    mean_std_df = pd.DataFrame({'mean': mean, 'std': std})
+    mean_std_df.to_csv("mean_std_file.csv", index=False)
+    filename = os.path.basename(input_file)
+    mean_std_file3 = os.path.join(app.config['UPLOAD_FOLDER'], "mean_std3_" + filename)
+
+    global g_compress_file3
+    g_compress_file3 = compress_file3
+    global g_mean_std_file
+    g_mean_std_file = mean_std_file3
+
+    first_four_rows = compressed_pca_data.head(4).to_dict(orient='records')
+    return jsonify({
+        "success": True,
+        "message": "File uploaded and processed successfully",
+        "data": first_four_rows
+    })
+
+@app.route('/reconstruct3', methods=['GET'])
+def reconstruct3():
+    # Load compressed data from CSV file
+    input_file = g_compress_file3
+    compressed_pca_data = pd.read_csv(input_file)
+    compressed_data = compressed_pca_data.values
+
+    n_of_columns = compressed_pca_data.columns
+
+    # Load mean and std values from "mean_std_file.csv"
+    mean_std_file = g_mean_std_file
+    mean_std_df = pd.read_csv(mean_std_file)
+    mean = mean_std_df['mean'].values
+    std = mean_std_df['std'].values
+
+    # Initialize array to store reconstructed data
+    reconstructed_data = np.zeros_like(compressed_data)
+
+    # Apply decompression and reconstruction to each column separately
+    for i in range(compressed_data.shape[1]):
+        # Inverse DCT transformation
+        reconstructed_column = idct(compressed_data[:, i], norm='ortho')
+        
+        # Denormalization
+        reconstructed_column = (reconstructed_column * std[i]) + mean[i]
+        
+        # Store reconstructed data for the current column
+        reconstructed_data[:, i] = reconstructed_column
+
+    # Save the reconstructed data to a CSV file
+    reconstructed_pca_data = pd.DataFrame(reconstructed_data, columns=n_of_columns)
+    reconstructed_pca_data.to_csv("reconstructed_pca_data.csv", index=False, float_format='%.4f')
+
+    filename = os.path.basename(g_input_file_3)
+    reconstructed_file_path3 = os.path.join(app.config['UPLOAD_FOLDER'], "reconstructed_file3_" + filename)
+
+    global g_reconstructed_file_3
+    g_reconstructed_file_3 = reconstructed_file_path3
+    
+    first_four_rows = reconstructed_pca_data.head(4).to_dict(orient='records')
+    return jsonify({
+        "success": True,
+        "message": "File uploaded and processed successfully",
+        "data": first_four_rows
+    })
 
 @app.route('/submit1', methods=['POST'])    #input
 def submit1():
