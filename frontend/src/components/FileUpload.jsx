@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './FileUpload.css'; // Import CSS file for styling
 
 const FileUpload = () => {
@@ -40,6 +40,7 @@ const FileUpload = () => {
         <input className="upload-input" type="file" onChange={onFileChange} />
         <button className="upload-button" onClick={onFileUpload}>Upload</button>
       </div>
+      <Link to="/dashboard" className="home-link">mohan</Link>
     </div>
   );
 };

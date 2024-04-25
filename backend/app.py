@@ -12,6 +12,8 @@ import io
 import base64
 from collections import OrderedDict
 import csv
+from flask import request
+import os
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}}) # Enable CORS for React frontend
@@ -97,6 +99,7 @@ def upload_file():
             "success": True,
             "message": "File uploaded and processed successfully",
         })
+
 
 # fetches the input data...
 @app.route('/data', methods=['GET'])
@@ -366,30 +369,7 @@ def dopca():
         "data": first_four_rows
     })
 
-@app.route('/download-files', methods=['GET'])
-def download_files():
-    global compress_file, pc_data_file, g_mean_std_file
-    file_paths = [compress_file, pc_data_file, g_mean_std_file]
 
-    # Create a zip file in memory
-    zip_data = io.BytesIO()
-    with zipfile.ZipFile(zip_data, mode='w') as zip_file:
-        for file_path in file_paths:
-            if os.path.isfile(file_path):
-                filename = os.path.basename(file_path)
-                zip_file.write(file_path, filename)
-
-    zip_data.seek(0)
-
-    # Create a response object with the zip file data
-    response = make_response(zip_data.getvalue())
-    response.headers['Content-Type'] = 'application/zip'
-    response.headers['Content-Disposition'] = 'attachment; filename=files.zip'
-
-    return response
-
-from flask import request
-import os
 
 @app.route('/get-file-sizes', methods=['GET'])
 def get_file_sizes():
@@ -431,10 +411,53 @@ def calculate_rmse():
 
     return jsonify({'rmse': float(rmse)})  
 
+@app.route('/upload2', methods=['POST'])
+def upload_files():
+    try:
+        if 'files' not in request.files:
+            return jsonify({'success': False, 'error': 'No files received'}), 400
+
+        files = request.files.getlist('files')
+
+        if not files:
+            return jsonify({'success': False, 'error': 'No files received'}), 400
+
+        for file in files:
+            if file.filename == '':
+                return jsonify({'success': False, 'error': 'No file selected'}), 400
+
+            if file and file.filename.endswith('.csv'):
+                file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+                file.save(file_path)
+                print(file_path)
+                # You can perform further processing on the saved CSV file here
+        
+        data1 = ('uploads/compressed_processed_output10.csv')
+        data2 = ('uploads/pc_data_processed_output10.csv')
+        data3 = ('uploads/mean_processed_output10.csv')
+
+        global compress_file
+        compress_file = data1
+        global pc_data_file
+        pc_data_file = data2
+        global g_mean_std_file
+        g_mean_std_file = data3
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/reconstruct', methods=['GET'])
 def reconstruct():
-    X_pca = g_X_pca
-    principal_components = g_principal_components
+    # X_pca = g_X_pca
+    # principal_components = g_principal_components
+    # mean_std_file = g_mean_std_file
+    # mean_std_dev_data = pd.read_csv(mean_std_file)
+
+    X_pca = pd.read_csv(compress_file)
+    principal_components = pd.read_csv(pc_data_file)
     mean_std_file = g_mean_std_file
     mean_std_dev_data = pd.read_csv(mean_std_file)
 
@@ -528,6 +551,45 @@ def reverse_standardization(reconstructed_data, means, stds):
         # Reverse the standardization
         original_data = (reconstructed_data * stds) + means
         return original_data
+
+@app.route('/download-files', methods=['GET'])
+def download_files():
+    global compress_file, pc_data_file, g_mean_std_file
+    file_paths = [compress_file, pc_data_file, g_mean_std_file]
+
+    # Create a zip file in memory
+    zip_data = io.BytesIO()
+    with zipfile.ZipFile(zip_data, mode='w') as zip_file:
+        for file_path in file_paths:
+            if os.path.isfile(file_path):
+                filename = os.path.basename(file_path)
+                zip_file.write(file_path, filename)
+
+    zip_data.seek(0)
+
+    # Create a response object with the zip file data
+    response = make_response(zip_data.getvalue())
+    response.headers['Content-Type'] = 'application/zip'
+    response.headers['Content-Disposition'] = 'attachment; filename=files.zip'
+
+    return response
+
+
+@app.route('/download-compressed-csv', methods=['GET'])
+def download_compressed_csv():
+    global g_original_file
+    file_path = g_original_file
+
+    # Check if the file exists
+    if os.path.isfile(file_path):
+        # Create a response object with the CSV file data
+        response = make_response(send_file(file_path, as_attachment=True))
+        response.headers['Content-Disposition'] = f'attachment; filename={os.path.basename(file_path)}'
+        response.headers['Content-Type'] = 'text/csv'
+
+        return response
+    else:
+        return jsonify({"error": "File not found"}), 404
 
 
 if __name__ == "__main__":
