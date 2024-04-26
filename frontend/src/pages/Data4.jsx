@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Allsteps3 from '../components/Allsteps3';
 import './Data.css'; // Import CSS file for styling
 import Dinput3 from '../components/Dinput3';
+import Allsteps4 from '../components/Allsteps4';
 
 
 const Data4 = () => {
@@ -36,7 +37,7 @@ const Data4 = () => {
 
   return (
     <div className="data-container">
-      <Allsteps3 />
+      <Allsteps4 />
       {csvData ? (
         <div className="data-table-container">
           <h2 className="data-title">Input Data:</h2>

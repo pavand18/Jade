@@ -3,7 +3,7 @@ import React from 'react';
 import Allsteps3 from './Allsteps3';
 import Allsteps4 from './Allsteps4';
 
-function Dashboard3 () {
+function Dashboard4 () {
  return (
     <div>
       <h1 className='heading'>Dashboard</h1>
@@ -12,4 +12,4 @@ function Dashboard3 () {
  );
 };
 
-export default Dashboard3;
+export default Dashboard4;

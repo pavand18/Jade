@@ -76,7 +76,6 @@ def add_row_to_csv(input_file, output_file):
 
 
 # >>> UPLOAD AND DATA
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -256,8 +255,8 @@ def get_data():
     })
 
 
-# >>> OPERATIONS <<<
 
+# >>> OPERATIONS <<<
 @app.route('/standardise', methods=['GET'])
 def standardise_data():
     input_file = input_modified_file      
@@ -510,8 +509,9 @@ def original():
     original_data = reverse_standardization(reconstructed_data, means, stds)
 
     filename = os.path.basename(input_modified_file)
-    original_csv_file = os.path.join(app.config['UPLOAD_FOLDER'], "reconstructed.csv")
+    original_csv_file = os.path.join(app.config['UPLOAD_FOLDER'], "pca_output.csv")
     original_data.to_csv(original_csv_file, index=False, float_format='%.4f')
+    
     global g_original_file 
     g_original_file = original_csv_file
 
@@ -532,16 +532,10 @@ def original():
             bus_data[bus_name] = {}
         bus_data[bus_name][parameter] = value
 
-    # Printing the formatted output
-    print("Bus Data:")
-    for bus, parameters in bus_data.items():
-        print(bus)
-        for parameter, value in parameters.items():
-            print(f"- {parameter}: {value}")
-
     add_row_to_csv(original_csv_file, fake_output_file)
     X_original_data = pd.read_csv(fake_output_file)
 
+    # original_data
     first_four_rows = X_original_data.head(4).to_dict(orient='records')
     return jsonify({
         "success": True,
@@ -555,8 +549,8 @@ def reverse_standardization(reconstructed_data, means, stds):
         return original_data
 
 
-# >>> FILES AND RMSE <<<
 
+# >>> FILES AND RMSE <<<
 @app.route('/get-file-sizes', methods=['GET'])
 def get_file_sizes():
     global compress_file, pc_data_file, g_mean_std_file, input_modified_file
@@ -646,8 +640,8 @@ def get_file_info():
     return jsonify({'success': True, 'files': file_info})
 
 
-# >>> DOWNLOAD FILES <<< 
 
+# >>> DOWNLOAD FILES <<< 
 @app.route('/download-files', methods=['GET'])  #1 zip
 def download_files():
     global compress_file, pc_data_file, g_mean_std_file
@@ -722,6 +716,7 @@ def download_3():
         return response
     else:
         return jsonify({"error": "File not found"}), 404
+
 
 
 # >>> INPUT AND PLOT <<<
