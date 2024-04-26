@@ -23,7 +23,7 @@ const Pca = () => {
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.setAttribute('download', 'files.zip');
+      link.setAttribute('download', 'Pca_compress.zip');
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);

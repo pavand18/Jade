@@ -88,7 +88,7 @@ def upload_file():
         # Process the file: remove the first column
         data = pd.read_csv(file_path) 
         X = data.iloc[:, 0:] 
-        processed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 'processed_' + filename)
+        processed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         X.to_csv(processed_file_path, index=False)
 
         global input_modified_file
@@ -177,11 +177,11 @@ def standardise_data():
 
 
     filename = os.path.basename(input_modified_file)
-    standardise_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "standardise_" + filename)
+    standardise_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "standardise.csv")
     X_standardized.to_csv(standardise_file_path, index=False, float_format='%.4f')
 
     filename = os.path.basename(input_modified_file)
-    mean_std_file = os.path.join(app.config['UPLOAD_FOLDER'], "mean_" + filename)
+    mean_std_file = os.path.join(app.config['UPLOAD_FOLDER'], "mean_std.csv")
     stats_df = pd.DataFrame({'Mean': means, 'Standard_Deviation': stds})
     stats_df.to_csv(mean_std_file)
 
@@ -240,13 +240,13 @@ def compression3():
     # Save the compressed data to a CSV file
     compressed_pca_data = pd.DataFrame(compressed_data, columns=no_of_columns)
     filename = os.path.basename(input_file)
-    compress_file3 = os.path.join(app.config['UPLOAD_FOLDER'], "compress3_" + filename)
+    compress_file3 = os.path.join(app.config['UPLOAD_FOLDER'], "compress_dct.csv")
     compressed_pca_data.to_csv(compress_file3, index=False, float_format='%.2f')
 
     # Create a DataFrame to store mean and std values
     mean_std_df = pd.DataFrame({'mean': mean, 'std': std})
     filename = os.path.basename(input_file)
-    mean_std_file3 = os.path.join(app.config['UPLOAD_FOLDER'], "mean_std3_" + filename)
+    mean_std_file3 = os.path.join(app.config['UPLOAD_FOLDER'], "mean_std_dct.csv")
     mean_std_df.to_csv(mean_std_file3, index=False)
     
     global g_compress_file3
@@ -293,7 +293,7 @@ def reconstruct3():
     # Save the reconstructed data to a CSV file
     reconstructed_pca_data = pd.DataFrame(reconstructed_data, columns=n_of_columns)
     filename = os.path.basename(g_input_file_3)
-    reconstructed_file_path3 = os.path.join(app.config['UPLOAD_FOLDER'], "reconstructed_file3_" + filename)
+    reconstructed_file_path3 = os.path.join(app.config['UPLOAD_FOLDER'], "reconstructed_dct_file.csv")
     reconstructed_pca_data.to_csv(reconstructed_file_path3, index=False, float_format='%.4f')
 
     global g_reconstructed_file_3
@@ -516,14 +516,14 @@ def dopca():
     pc_data = pd.DataFrame(data=principal_components, columns=[f'PC{i+1}' for i in range(n_components)])
 
     filename = os.path.basename(input_modified_file)
-    pc_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "pc_data_" + filename)
+    pc_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "pc_data.csv")
     pc_data.to_csv(pc_file_path, index=False)
 
     X_pca = np.dot(X_standardized, principal_components)
     compressed_data = pd.DataFrame(data=X_pca, columns=[f'PC{i+1}' for i in range(n_components)])
 
     filename = os.path.basename(input_modified_file)
-    compressed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "compressed_" + filename)
+    compressed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "compressed.csv")
     compressed_data.to_csv(compressed_file_path, index=False, float_format='%.4f')
 
     global compress_file
@@ -564,16 +564,14 @@ def get_file_sizes():
 
 @app.route('/get-file-sizes3', methods=['GET'])
 def get_file_sizes3():
-    global g_compress_file3, g_mean_std_file, g_input_file_3
+    global g_compress_file3, g_mean_std_file
 
-    input_file_size = os.path.getsize(g_input_file_3)
     compressed_files_sizes = {
         'compress_file': os.path.getsize(g_compress_file3),
         'g_mean_std_file': os.path.getsize(g_mean_std_file),
     }
 
     return jsonify({
-        'inputFileSize': input_file_size,
         'compressedFilesSizes': compressed_files_sizes,
     })
 
@@ -647,9 +645,9 @@ def upload_files():
                 print(file_path)
                 # You can perform further processing on the saved CSV file here
         
-        data1 = ('uploads/compressed_processed_output10.csv')
-        data2 = ('uploads/pc_data_processed_output10.csv')
-        data3 = ('uploads/mean_processed_output10.csv')
+        data1 = ('uploads/compressed.csv')
+        data2 = ('uploads/pc_data.csv')
+        data3 = ('uploads/mean_std.csv')
 
         global compress_file
         compress_file = data1
@@ -663,6 +661,70 @@ def upload_files():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
+@app.route('/get-file-info', methods=['GET'])
+def get_file_info():
+    files = [compress_file, pc_data_file, g_mean_std_file]
+    file_info = []
+    for file_name in files:
+        file_path = os.path.join(UPLOAD_FOLDER, file_name)
+        if os.path.exists(file_path):
+            file_size_kb = os.path.getsize(file_path) / 1024
+            file_info.append({'name': file_name, 'size': file_size_kb})
+    return jsonify({'success': True, 'files': file_info})
+
+@app.route('/data2', methods=['GET'])
+def send_file_info():
+    try:
+        file_info = []
+        for file_path in [compress_file, pc_data_file, g_mean_std_file]:
+            if file_path and os.path.isfile(file_path):
+                file_name = os.path.basename(file_path)
+                file_size = os.path.getsize(file_path)
+                file_info.append({'name': file_name, 'size': file_size})
+
+        if file_info:
+            return jsonify({'success': True, 'files': file_info})
+        else:
+            return jsonify({'success': True, 'files': []})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+
+@app.route('/upload4', methods=['POST'])
+def upload4():
+    try:
+        if 'files' not in request.files:
+            return jsonify({'success': False, 'error': 'No files received'}), 400
+
+        files = request.files.getlist('files')
+
+        if not files:
+            return jsonify({'success': False, 'error': 'No files received'}), 400
+
+        for file in files:
+            if file.filename == '':
+                return jsonify({'success': False, 'error': 'No file selected'}), 400
+
+            if file and file.filename.endswith('.csv'):
+                file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+                file.save(file_path)
+                print(file_path)
+                # You can perform further processing on the saved CSV file here
+        
+        data2 = ('uploads/compress_dct.csv')
+        data3 = ('uploads/mean_std_dct.csv')
+
+        global g_compress_file3
+        g_compress_file3 = data2 
+        global g_mean_std_file
+        g_mean_std_file = data3
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/reconstruct', methods=['GET'])
 def reconstruct():
@@ -686,7 +748,7 @@ def reconstruct():
     reconstructed_df = pd.DataFrame(reconstructed_data, columns=column_names_list)
 
     filename = os.path.basename(input_modified_file)
-    reconstructed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "reconstructed_" + filename)
+    reconstructed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "reconstructed.csv")
     reconstructed_df.to_csv(reconstructed_file_path, index=False, float_format='%.4f')
 
     global reconstructed_file
@@ -723,7 +785,7 @@ def original():
     original_data = reverse_standardization(reconstructed_data, means, stds)
 
     filename = os.path.basename(input_modified_file)
-    original_csv_file = os.path.join(app.config['UPLOAD_FOLDER'], "original_" + filename)
+    original_csv_file = os.path.join(app.config['UPLOAD_FOLDER'], "reconstructed.csv")
     original_data.to_csv(original_csv_file, index=False, float_format='%.4f')
     global g_original_file 
     g_original_file = original_csv_file
@@ -793,6 +855,21 @@ def download_files():
 def download_compressed_csv():
     global g_original_file
     file_path = g_original_file
+
+    # Check if the file exists
+    if os.path.isfile(file_path):
+        # Create a response object with the CSV file data
+        response = make_response(send_file(file_path, as_attachment=True))
+        response.headers['Content-Disposition'] = f'attachment; filename={os.path.basename(file_path)}'
+        response.headers['Content-Type'] = 'text/csv'
+
+        return response
+    else:
+        return jsonify({"error": "File not found"}), 404
+    
+@app.route('/download-4', methods=['GET'])
+def download_3():
+    file_path = g_reconstructed_file_3
 
     # Check if the file exists
     if os.path.isfile(file_path):
