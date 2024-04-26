@@ -73,6 +73,10 @@ def add_row_to_csv(input_file, output_file):
         writer = csv.writer(csvfile)
         writer.writerows(data)
 
+
+
+# >>> UPLOAD AND DATA
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -104,6 +108,43 @@ def upload_file():
             "message": "File uploaded and processed successfully",
         })
 
+@app.route('/upload2', methods=['POST'])
+def upload_files():
+    try:
+        if 'files' not in request.files:
+            return jsonify({'success': False, 'error': 'No files received'}), 400
+
+        files = request.files.getlist('files')
+
+        if not files:
+            return jsonify({'success': False, 'error': 'No files received'}), 400
+
+        for file in files:
+            if file.filename == '':
+                return jsonify({'success': False, 'error': 'No file selected'}), 400
+
+            if file and file.filename.endswith('.csv'):
+                file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+                file.save(file_path)
+                print(file_path)
+                # You can perform further processing on the saved CSV file here
+        
+        data1 = ('uploads/compressed.csv')
+        data2 = ('uploads/pc_data.csv')
+        data3 = ('uploads/mean_std.csv')
+
+        global compress_file
+        compress_file = data1
+        global pc_data_file
+        pc_data_file = data2
+        global g_mean_std_file
+        g_mean_std_file = data3
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/upload3', methods=['POST'])
 def upload_file3():
     if 'file' not in request.files:
@@ -126,23 +167,39 @@ def upload_file3():
             "message": "File uploaded and processed successfully",
         })
 
-# fetches the input data...
-@app.route('/data3', methods=['GET'])
-def get_data():
-    file_to_send = g_input_file_3 # Assuming the filename is passed as a query parameter
+@app.route('/upload4', methods=['POST'])
+def upload4():
+    try:
+        if 'files' not in request.files:
+            return jsonify({'success': False, 'error': 'No files received'}), 400
 
-    if not file_to_send:
-        return jsonify({"error": "No filename provided"}), 999
-    
-    X = pd.read_csv(file_to_send)
+        files = request.files.getlist('files')
 
-    # Get the first 4 rows of the DataFrame
-    first_four_rows = X.head(4).to_dict(orient='records')
-    return jsonify({
-        "success": True,
-        "message": "File uploaded and processed successfully",
-        "data": first_four_rows
-    })
+        if not files:
+            return jsonify({'success': False, 'error': 'No files received'}), 400
+
+        for file in files:
+            if file.filename == '':
+                return jsonify({'success': False, 'error': 'No file selected'}), 400
+
+            if file and file.filename.endswith('.csv'):
+                file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+                file.save(file_path)
+                print(file_path)
+                # You can perform further processing on the saved CSV file here
+        
+        data2 = ('uploads/compress_dct.csv')
+        data3 = ('uploads/mean_std_dct.csv')
+
+        global g_compress_file3
+        g_compress_file3 = data2 
+        global g_mean_std_file
+        g_mean_std_file = data3
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/data', methods=['GET'])
 def get_data3():
@@ -162,6 +219,44 @@ def get_data3():
         "message": "File uploaded and processed successfully",
         "data": first_four_rows
     })
+
+@app.route('/data2', methods=['GET'])
+def send_file_info():
+    try:
+        file_info = []
+        for file_path in [compress_file, pc_data_file, g_mean_std_file]:
+            if file_path and os.path.isfile(file_path):
+                file_name = os.path.basename(file_path)
+                file_size = os.path.getsize(file_path)
+                file_info.append({'name': file_name, 'size': file_size})
+
+        if file_info:
+            return jsonify({'success': True, 'files': file_info})
+        else:
+            return jsonify({'success': True, 'files': []})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/data3', methods=['GET'])
+def get_data():
+    file_to_send = g_input_file_3 # Assuming the filename is passed as a query parameter
+
+    if not file_to_send:
+        return jsonify({"error": "No filename provided"}), 999
+    
+    X = pd.read_csv(file_to_send)
+
+    # Get the first 4 rows of the DataFrame
+    first_four_rows = X.head(4).to_dict(orient='records')
+    return jsonify({
+        "success": True,
+        "message": "File uploaded and processed successfully",
+        "data": first_four_rows
+    })
+
+
+# >>> OPERATIONS <<<
 
 @app.route('/standardise', methods=['GET'])
 def standardise_data():
@@ -201,7 +296,6 @@ def standardise_data():
         "message": "File uploaded and processed successfully",
         "data": first_four_rows
     })
-
 
 def standardize_data(data):
     means = data.mean(axis=0)
@@ -306,6 +400,331 @@ def reconstruct3():
         "data": first_four_rows
     })
 
+@app.route('/dopca', methods=['GET'])
+def dopca():
+    n_components = request.args.get('n_components', default=2, type=int) # Adjust default as needed
+    X_standardized = pd.read_csv(standardised_file)
+    cov_matrix = np.cov(X_standardized, rowvar=False)
+    cov_matrix.shape
+    eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
+    sorted_indices = np.argsort(eigenvalues)[::-1]
+    eigenvalues = eigenvalues[sorted_indices]
+    eigenvectors = eigenvectors[:, sorted_indices]
+
+    global g_eigenvalues
+    g_eigenvalues = eigenvalues
+
+    print(f"XXXXXX number: {input_n3}")
+
+    n_components = int(input_n3)  # Adjust as needed
+    principal_components = eigenvectors[:, :n_components]
+    pc_data = pd.DataFrame(data=principal_components, columns=[f'PC{i+1}' for i in range(n_components)])
+
+    filename = os.path.basename(input_modified_file)
+    pc_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "pc_data.csv")
+    pc_data.to_csv(pc_file_path, index=False)
+
+    X_pca = np.dot(X_standardized, principal_components)
+    compressed_data = pd.DataFrame(data=X_pca, columns=[f'PC{i+1}' for i in range(n_components)])
+
+    filename = os.path.basename(input_modified_file)
+    compressed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "compressed.csv")
+    compressed_data.to_csv(compressed_file_path, index=False, float_format='%.4f')
+
+    global compress_file
+    compress_file = compressed_file_path #global file
+    global pc_data_file
+    pc_data_file = pc_file_path
+    global g_X_pca 
+    g_X_pca = X_pca
+    global g_principal_components    
+    g_principal_components = principal_components #global file
+
+
+    add_row_to_csv(compress_file, fake_output_file)
+    X_pca_data = pd.read_csv(fake_output_file)
+
+    first_four_rows = X_pca_data.head(4).to_dict(orient='records')
+    return jsonify({
+        "success": True,
+        "message": "File uploaded and processed successfully",
+        "data": first_four_rows
+    })
+
+@app.route('/reconstruct', methods=['GET'])
+def reconstruct():
+    # X_pca = g_X_pca
+    # principal_components = g_principal_components
+    # mean_std_file = g_mean_std_file
+    # mean_std_dev_data = pd.read_csv(mean_std_file)
+
+    X_pca = pd.read_csv(compress_file)
+    principal_components = pd.read_csv(pc_data_file)
+    mean_std_file = g_mean_std_file
+    mean_std_dev_data = pd.read_csv(mean_std_file)
+
+    input_file_path = mean_std_file # Replace with your input file path
+    df = pd.read_csv(input_file_path)
+
+    first_column = df.iloc[:, 0]
+    column_names_list = first_column.tolist()
+
+    reconstructed_data = np.dot(X_pca, principal_components.T)
+    reconstructed_df = pd.DataFrame(reconstructed_data, columns=column_names_list)
+
+    filename = os.path.basename(input_modified_file)
+    reconstructed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "reconstructed.csv")
+    reconstructed_df.to_csv(reconstructed_file_path, index=False, float_format='%.4f')
+
+    global reconstructed_file
+    reconstructed_file = reconstructed_file_path #global file
+    # return send_file(reconstructed_file, as_attachment=True)
+
+    add_row_to_csv(reconstructed_file, fake_output_file)
+    X_reconstructed_data = pd.read_csv(fake_output_file)
+
+    first_four_rows = X_reconstructed_data.head(4).to_dict(orient='records')
+    return jsonify({
+        "success": True,
+        "message": "File uploaded and processed successfully",
+        "data": first_four_rows
+    }) 
+
+@app.route('/original', methods=['GET'])
+def original():
+    # Input CSV file paths
+    reconstructed_data_csv_file = reconstructed_file
+    mean_std_dev_csv_file = g_mean_std_file
+
+    # Read the standardized data from the CSV file
+    reconstructed_data = pd.read_csv(reconstructed_data_csv_file)
+
+    # Read means and standard deviations from the CSV file
+    mean_std_dev_data = pd.read_csv(mean_std_dev_csv_file)
+
+    # Extract means and standard deviations
+    means = mean_std_dev_data['Mean'].values
+    stds = mean_std_dev_data['Standard_Deviation'].values
+
+    # Reverse the standardization to obtain the original data
+    original_data = reverse_standardization(reconstructed_data, means, stds)
+
+    filename = os.path.basename(input_modified_file)
+    original_csv_file = os.path.join(app.config['UPLOAD_FOLDER'], "reconstructed.csv")
+    original_data.to_csv(original_csv_file, index=False, float_format='%.4f')
+    global g_original_file 
+    g_original_file = original_csv_file
+
+    # Original data
+    original_data_str = """Bus ODESSA 2 0 V pu,Bus ODESSA 2 0 V angle,Bus ODESSA 2 0 Frequency,Bus PRESIDIO 2 0 V pu,Bus PRESIDIO 2 0 V angle,Bus PRESIDIO 2 0 Frequency,Bus O DONNELL 1 0 V pu,Bus O DONNELL 1 0 V angle,Bus O DONNELL 1 0 Frequency,Bus O DONNELL 1 1 V pu,Bus O DONNELL 1 1 V angle,Bus O DONNELL 1 1 Frequency,Bus BIG SPRING 5 0 V pu,Bus BIG SPRING 5 0 V angle,Bus BIG SPRING 5 0 Frequency,Bus BIG SPRING 5 1 V pu,Bus BIG SPRING 5 1 V angle,Bus BIG SPRING 5 1 Frequency,Bus VAN HORN 0 V pu,Bus VAN HORN 0 V angle,Bus VAN HORN 0 Frequency,Bus IRAAN 2 0 V pu,Bus IRAAN 2 0 V angle,Bus IRAAN 2 0 Frequency,Bus IRAAN 2 1 V pu,Bus IRAAN 2 1 V angle,Bus IRAAN 2 1 Frequency,Bus PRESIDIO 1 0 V pu,Bus PRESIDIO 1 0 V angle,Bus PRESIDIO 1 0 Frequency,Bus PRESIDIO 1 1 V pu,Bus PRESIDIO 1 1 V angle,Bus PRESIDIO 1 1 Frequency,Bus SANDERSON 0 V pu,Bus SANDERSON 0 V angle,Bus SANDERSON 0 Frequency,Bus MONAHANS 2 0 V pu,Bus MONAHANS 2 0 V angle,Bus MONAHANS 2 0 Frequency,Bus GRANDFALLS 0 V pu,Bus GRANDFALLS 0 V angle,Bus GRANDFALLS 0 Frequency,Bus MARFA 0 V pu,Bus MARFA 0 V angle,Bus MARFA 0 Frequency,Bus GARDEN CITY 0 V pu,Bus GARDEN CITY 0 V angle,Bus GARDEN CITY 0 Frequency,Bus ODESSA 4 0 V pu,Bus ODESSA 4 0 V angle,Bus ODESSA 4 0 Frequency,Bus NOTREES 0 V pu,Bus NOTREES 0 V angle,Bus NOTREES 0 Frequency,Bus MIDLAND 4 0 V pu,Bus MIDLAND 4 0 V angle,Bus MIDLAND 4 0 Frequency,Bus BIG SPRING 1 0 V pu,Bus BIG SPRING 1 0 V angle,Bus BIG SPRING 1 0 Frequency,Bus BIG SPRING 1 1 V pu,Bus BIG SPRING 1 1 V angle,Bus BIG SPRING 1 1 Frequency,Bus O DONNELL 2 0 V pu,Bus O DONNELL 2 0 V angle,Bus O DONNELL 2 0 Frequency,Bus O DONNELL 2 1 V pu,Bus O DONNELL 2 1 V angle,Bus O DONNELL 2 1 Frequency,Bus ODESSA 6 0 V pu,Bus ODESSA 6 0 V angle,Bus ODESSA 6 0 Frequency,Bus BIG SPRINGS 0 V pu,Bus BIG SPRINGS 0 V angle,Bus BIG SPRINGS 0 Frequency,Bus BIG SPRINGS 1 V pu,Bus BIG SPRINGS 1 V angle,Bus BIG SPRINGS 1 Frequency,Bus MIDLAND 2 0 V pu,Bus MIDLAND 2 0 V angle,Bus MIDLAND 2 0 Frequency,Bus COAHOMA 0 V pu,Bus COAHOMA 0 V angle,Bus COAHOMA 0 Frequency,Bus MIDLAND 3 0 V pu,Bus MIDLAND 3 0 V angle,Bus MIDLAND 3 0 Frequency,Bus ALPINE 0 V pu,Bus ALPINE 0 V angle,Bus ALPINE 0 Frequency,Bus FORT DAVIS 0 V pu,Bus FORT DAVIS 0 V angle,Bus FORT DAVIS 0 Frequency,Bus MCCAMEY 1 0 V pu,Bus MCCAMEY 1 0 V angle,Bus MCCAMEY 1 0 Frequency,Bus KERMIT 0 V pu,Bus KERMIT 0 V angle,Bus KERMIT 0 Frequency,Bus ODESSA 1 0 V pu,Bus ODESSA 1 0 V angle,Bus ODESSA 1 0 Frequency,Bus ALPINE 1 0 V pu,Bus ALPINE 1 0 V angle,Bus ALPINE 1 0 Frequency,Bus ALPINE 1 1 V pu,Bus ALPINE 1 1 V angle,Bus ALPINE 1 1 Frequency,Bus MARFA 1 0 V pu,Bus MARFA 1 0 V angle,Bus MARFA 1 0 Frequency,Bus MARFA 1 1 V pu,Bus MARFA 1 1 V angle,Bus MARFA 1 1 Frequency,Bus MIDLAND 1 0 V pu,Bus MIDLAND 1 0 V angle,Bus MIDLAND 1 0 Frequency,Bus SEMINOLE 0 V pu,Bus SEMINOLE 0 V angle,Bus SEMINOLE 0 Frequency,Bus BIG SPRING 3 0 V pu,Bus BIG SPRING 3 0 V angle,Bus BIG SPRING 3 0 Frequency,Bus ODESSA 5 0 V pu,Bus ODESSA 5 0 V angle,Bus ODESSA 5 0 Frequency,Bus BIG SPRING 4 0 V pu,Bus BIG SPRING 4 0 V angle,Bus BIG SPRING 4 0 Frequency,Bus ODESSA 3 0 V pu,Bus ODESSA 3 0 V angle,Bus ODESSA 3 0 Frequency,Bus ODESSA 3 1 V pu,Bus ODESSA 3 1 V angle,Bus ODESSA 3 1 Frequency,Bus BIG SPRING 2 0 V pu,Bus BIG SPRING 2 0 V angle,Bus BIG SPRING 2 0 Frequency,Bus ALPINE 2 0 V pu,Bus ALPINE 2 0 V angle,Bus ALPINE 2 0 Frequency,Bus MARFA 2 0 V pu,Bus MARFA 2 0 V angle,Bus MARFA 2 0 Frequency,Bus MIDLAND 0 V pu,Bus MIDLAND 0 V angle,Bus MIDLAND 0 Frequency,Bus MONAHANS 1 0 V pu,Bus MONAHANS 1 0 V angle,Bus MONAHANS 1 0 Frequency,Bus MCCAMEY 2 0 V pu,Bus MCCAMEY 2 0 V angle,Bus MCCAMEY 2 0 Frequency,Bus SEMINOLE 1 0 V pu,Bus SEMINOLE 1 0 V angle,Bus SEMINOLE 1 0 Frequency,Bus MCCAMEY 0 V pu,Bus MCCAMEY 0 V angle,Bus MCCAMEY 0 Frequency,Bus MONAHANS 0 V pu,Bus MONAHANS 0 V angle,Bus MONAHANS 0 Frequency,Bus ODESSA 0 V pu,Bus ODESSA 0 V angle,Bus ODESSA 0 Frequency"""
+
+    # Parsing the original data
+    parsed_data = original_data_str.split(',')
+
+    # Storing data in a dictionary
+    bus_data = {}
+    for item in parsed_data:
+        parts = item.split()
+        bus_name = ' '.join(parts[1:-3])  # Extracting bus name
+        parameter = parts[-3]  # Extracting parameter (e.g., V pu, V angle, Frequency)
+        value = parts[-1]  # Extracting value
+        if bus_name not in bus_data:
+            bus_data[bus_name] = {}
+        bus_data[bus_name][parameter] = value
+
+    # Printing the formatted output
+    print("Bus Data:")
+    for bus, parameters in bus_data.items():
+        print(bus)
+        for parameter, value in parameters.items():
+            print(f"- {parameter}: {value}")
+
+    add_row_to_csv(original_csv_file, fake_output_file)
+    X_original_data = pd.read_csv(fake_output_file)
+
+    first_four_rows = X_original_data.head(4).to_dict(orient='records')
+    return jsonify({
+        "success": True,
+        "message": "File uploaded and processed successfully",
+        "data": first_four_rows
+    })
+
+def reverse_standardization(reconstructed_data, means, stds):
+        # Reverse the standardization
+        original_data = (reconstructed_data * stds) + means
+        return original_data
+
+
+# >>> FILES AND RMSE <<<
+
+@app.route('/get-file-sizes', methods=['GET'])
+def get_file_sizes():
+    global compress_file, pc_data_file, g_mean_std_file, input_modified_file
+
+    input_file_size = os.path.getsize(input_modified_file)
+    compressed_files_sizes = {
+        'compress_file': os.path.getsize(compress_file),
+        'pc_data_file': os.path.getsize(pc_data_file),
+        'g_mean_std_file': os.path.getsize(g_mean_std_file),
+    }
+
+    return jsonify({
+        'inputFileSize': input_file_size,
+        'compressedFilesSizes': compressed_files_sizes,
+    })
+
+@app.route('/get-file-sizes3', methods=['GET'])
+def get_file_sizes3():
+    global g_compress_file3, g_mean_std_file
+
+    compressed_files_sizes = {
+        'compress_file': os.path.getsize(g_compress_file3),
+        'g_mean_std_file': os.path.getsize(g_mean_std_file),
+    }
+
+    return jsonify({
+        'compressedFilesSizes': compressed_files_sizes,
+    })
+
+@app.route('/calculate-rmse', methods=['GET'])
+def calculate_rmse():
+    input_file = input_modified_file
+    output_file = g_original_file
+
+    # Load original data
+    original_data = pd.read_csv(input_file).values
+
+    # Load reconstructed data
+    reconstructed_data = pd.read_csv(output_file).values
+
+    # Initialize variable to store total squared error
+    total_squared_error = 0
+
+    # Calculate squared error for each column
+    for i in range(original_data.shape[1]):
+        squared_error = np.sum((original_data[:, i] - reconstructed_data[:, i]) ** 2)
+        total_squared_error += squared_error
+
+    # Calculate RMSE (square root of average squared error)
+    rmse = np.sqrt(total_squared_error / (original_data.shape[0] * original_data.shape[1]))
+
+    return jsonify({'rmse': float(rmse)})  
+
+@app.route('/calculate-rmse3', methods=['GET'])
+def calculate_rmse3():
+    input_file = g_input_file_3
+    output_file = g_reconstructed_file_3
+
+    # Load original data
+    original_data = pd.read_csv(input_file).values
+
+    # Load reconstructed data
+    reconstructed_data = pd.read_csv(output_file).values
+
+    # Initialize variable to store total squared error
+    total_squared_error = 0
+
+    # Calculate squared error for each column
+    for i in range(original_data.shape[1]):
+        squared_error = np.sum((original_data[:, i] - reconstructed_data[:, i]) ** 2)
+        total_squared_error += squared_error
+
+    # Calculate RMSE (square root of average squared error)
+    rmse = np.sqrt(total_squared_error / (original_data.shape[0] * original_data.shape[1]))
+
+    return jsonify({'rmse': float(rmse)})  
+
+@app.route('/get-file-info', methods=['GET'])
+def get_file_info():
+    files = [compress_file, pc_data_file, g_mean_std_file]
+    file_info = []
+    for file_name in files:
+        file_path = os.path.join(UPLOAD_FOLDER, file_name)
+        if os.path.exists(file_path):
+            file_size_kb = os.path.getsize(file_path) / 1024
+            file_info.append({'name': file_name, 'size': file_size_kb})
+    return jsonify({'success': True, 'files': file_info})
+
+
+# >>> DOWNLOAD FILES <<< 
+
+@app.route('/download-files', methods=['GET'])  #1 zip
+def download_files():
+    global compress_file, pc_data_file, g_mean_std_file
+    file_paths = [compress_file, pc_data_file, g_mean_std_file]
+
+    # Create a zip file in memory
+    zip_data = io.BytesIO()
+    with zipfile.ZipFile(zip_data, mode='w') as zip_file:
+        for file_path in file_paths:
+            if os.path.isfile(file_path):
+                filename = os.path.basename(file_path)
+                zip_file.write(file_path, filename)
+
+    zip_data.seek(0)
+
+    # Create a response object with the zip file data
+    response = make_response(zip_data.getvalue())
+    response.headers['Content-Type'] = 'application/zip'
+    response.headers['Content-Disposition'] = 'attachment; filename=files.zip'
+
+    return response
+
+@app.route('/download-compressed-csv', methods=['GET']) #2 file
+def download_compressed_csv():
+    global g_original_file
+    file_path = g_original_file
+
+    # Check if the file exists
+    if os.path.isfile(file_path):
+        # Create a response object with the CSV file data
+        response = make_response(send_file(file_path, as_attachment=True))
+        response.headers['Content-Disposition'] = f'attachment; filename={os.path.basename(file_path)}'
+        response.headers['Content-Type'] = 'text/csv'
+
+        return response
+    else:
+        return jsonify({"error": "File not found"}), 404
+    
+@app.route('/download-files3', methods=['GET']) #3 zip
+def download_files3():
+    global g_compress_file3, g_mean_std_file
+    file_paths = [g_compress_file3, g_mean_std_file]
+
+    # Create a zip file in memory
+    zip_data = io.BytesIO()
+    with zipfile.ZipFile(zip_data, mode='w') as zip_file:
+        for file_path in file_paths:
+            if os.path.isfile(file_path):
+                filename = os.path.basename(file_path)
+                zip_file.write(file_path, filename)
+
+    zip_data.seek(0)
+
+    # Create a response object with the zip file data
+    response = make_response(zip_data.getvalue())
+    response.headers['Content-Type'] = 'application/zip'
+    response.headers['Content-Disposition'] = 'attachment; filename=files.zip'
+
+    return response
+
+@app.route('/download-4', methods=['GET'])  #4 file
+def download_3():
+    file_path = g_reconstructed_file_3
+
+    # Check if the file exists
+    if os.path.isfile(file_path):
+        # Create a response object with the CSV file data
+        response = make_response(send_file(file_path, as_attachment=True))
+        response.headers['Content-Disposition'] = f'attachment; filename={os.path.basename(file_path)}'
+        response.headers['Content-Type'] = 'text/csv'
+
+        return response
+    else:
+        return jsonify({"error": "File not found"}), 404
+
+
+# >>> INPUT AND PLOT <<<
 @app.route('/submit1', methods=['POST'])    #input
 def submit1():
     data = request.get_json()
@@ -354,7 +773,6 @@ def col3():
         "data": limited_data,
         "data2": limited_data
     })
-
 
 @app.route('/submit2', methods=['POST'])    #standardise
 def submit2():
@@ -495,414 +913,7 @@ def var():
         "data": eigenvalues_list
     })
 
-@app.route('/dopca', methods=['GET'])
-def dopca():
-    n_components = request.args.get('n_components', default=2, type=int) # Adjust default as needed
-    X_standardized = pd.read_csv(standardised_file)
-    cov_matrix = np.cov(X_standardized, rowvar=False)
-    cov_matrix.shape
-    eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
-    sorted_indices = np.argsort(eigenvalues)[::-1]
-    eigenvalues = eigenvalues[sorted_indices]
-    eigenvectors = eigenvectors[:, sorted_indices]
 
-    global g_eigenvalues
-    g_eigenvalues = eigenvalues
-
-    print(f"XXXXXX number: {input_n3}")
-
-    n_components = int(input_n3)  # Adjust as needed
-    principal_components = eigenvectors[:, :n_components]
-    pc_data = pd.DataFrame(data=principal_components, columns=[f'PC{i+1}' for i in range(n_components)])
-
-    filename = os.path.basename(input_modified_file)
-    pc_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "pc_data.csv")
-    pc_data.to_csv(pc_file_path, index=False)
-
-    X_pca = np.dot(X_standardized, principal_components)
-    compressed_data = pd.DataFrame(data=X_pca, columns=[f'PC{i+1}' for i in range(n_components)])
-
-    filename = os.path.basename(input_modified_file)
-    compressed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "compressed.csv")
-    compressed_data.to_csv(compressed_file_path, index=False, float_format='%.4f')
-
-    global compress_file
-    compress_file = compressed_file_path #global file
-    global pc_data_file
-    pc_data_file = pc_file_path
-    global g_X_pca 
-    g_X_pca = X_pca
-    global g_principal_components    
-    g_principal_components = principal_components #global file
-
-
-    add_row_to_csv(compress_file, fake_output_file)
-    X_pca_data = pd.read_csv(fake_output_file)
-
-    first_four_rows = X_pca_data.head(4).to_dict(orient='records')
-    return jsonify({
-        "success": True,
-        "message": "File uploaded and processed successfully",
-        "data": first_four_rows
-    })
-
-@app.route('/get-file-sizes', methods=['GET'])
-def get_file_sizes():
-    global compress_file, pc_data_file, g_mean_std_file, input_modified_file
-
-    input_file_size = os.path.getsize(input_modified_file)
-    compressed_files_sizes = {
-        'compress_file': os.path.getsize(compress_file),
-        'pc_data_file': os.path.getsize(pc_data_file),
-        'g_mean_std_file': os.path.getsize(g_mean_std_file),
-    }
-
-    return jsonify({
-        'inputFileSize': input_file_size,
-        'compressedFilesSizes': compressed_files_sizes,
-    })
-
-@app.route('/get-file-sizes3', methods=['GET'])
-def get_file_sizes3():
-    global g_compress_file3, g_mean_std_file
-
-    compressed_files_sizes = {
-        'compress_file': os.path.getsize(g_compress_file3),
-        'g_mean_std_file': os.path.getsize(g_mean_std_file),
-    }
-
-    return jsonify({
-        'compressedFilesSizes': compressed_files_sizes,
-    })
-
-@app.route('/calculate-rmse', methods=['GET'])
-def calculate_rmse():
-    input_file = input_modified_file
-    output_file = g_original_file
-
-    # Load original data
-    original_data = pd.read_csv(input_file).values
-
-    # Load reconstructed data
-    reconstructed_data = pd.read_csv(output_file).values
-
-    # Initialize variable to store total squared error
-    total_squared_error = 0
-
-    # Calculate squared error for each column
-    for i in range(original_data.shape[1]):
-        squared_error = np.sum((original_data[:, i] - reconstructed_data[:, i]) ** 2)
-        total_squared_error += squared_error
-
-    # Calculate RMSE (square root of average squared error)
-    rmse = np.sqrt(total_squared_error / (original_data.shape[0] * original_data.shape[1]))
-
-    return jsonify({'rmse': float(rmse)})  
-
-@app.route('/calculate-rmse3', methods=['GET'])
-def calculate_rmse3():
-    input_file = g_input_file_3
-    output_file = g_reconstructed_file_3
-
-    # Load original data
-    original_data = pd.read_csv(input_file).values
-
-    # Load reconstructed data
-    reconstructed_data = pd.read_csv(output_file).values
-
-    # Initialize variable to store total squared error
-    total_squared_error = 0
-
-    # Calculate squared error for each column
-    for i in range(original_data.shape[1]):
-        squared_error = np.sum((original_data[:, i] - reconstructed_data[:, i]) ** 2)
-        total_squared_error += squared_error
-
-    # Calculate RMSE (square root of average squared error)
-    rmse = np.sqrt(total_squared_error / (original_data.shape[0] * original_data.shape[1]))
-
-    return jsonify({'rmse': float(rmse)})  
-
-
-@app.route('/upload2', methods=['POST'])
-def upload_files():
-    try:
-        if 'files' not in request.files:
-            return jsonify({'success': False, 'error': 'No files received'}), 400
-
-        files = request.files.getlist('files')
-
-        if not files:
-            return jsonify({'success': False, 'error': 'No files received'}), 400
-
-        for file in files:
-            if file.filename == '':
-                return jsonify({'success': False, 'error': 'No file selected'}), 400
-
-            if file and file.filename.endswith('.csv'):
-                file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-                file.save(file_path)
-                print(file_path)
-                # You can perform further processing on the saved CSV file here
-        
-        data1 = ('uploads/compressed.csv')
-        data2 = ('uploads/pc_data.csv')
-        data3 = ('uploads/mean_std.csv')
-
-        global compress_file
-        compress_file = data1
-        global pc_data_file
-        pc_data_file = data2
-        global g_mean_std_file
-        g_mean_std_file = data3
-
-        return jsonify({'success': True})
-
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@app.route('/get-file-info', methods=['GET'])
-def get_file_info():
-    files = [compress_file, pc_data_file, g_mean_std_file]
-    file_info = []
-    for file_name in files:
-        file_path = os.path.join(UPLOAD_FOLDER, file_name)
-        if os.path.exists(file_path):
-            file_size_kb = os.path.getsize(file_path) / 1024
-            file_info.append({'name': file_name, 'size': file_size_kb})
-    return jsonify({'success': True, 'files': file_info})
-
-@app.route('/data2', methods=['GET'])
-def send_file_info():
-    try:
-        file_info = []
-        for file_path in [compress_file, pc_data_file, g_mean_std_file]:
-            if file_path and os.path.isfile(file_path):
-                file_name = os.path.basename(file_path)
-                file_size = os.path.getsize(file_path)
-                file_info.append({'name': file_name, 'size': file_size})
-
-        if file_info:
-            return jsonify({'success': True, 'files': file_info})
-        else:
-            return jsonify({'success': True, 'files': []})
-
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-    
-
-@app.route('/upload4', methods=['POST'])
-def upload4():
-    try:
-        if 'files' not in request.files:
-            return jsonify({'success': False, 'error': 'No files received'}), 400
-
-        files = request.files.getlist('files')
-
-        if not files:
-            return jsonify({'success': False, 'error': 'No files received'}), 400
-
-        for file in files:
-            if file.filename == '':
-                return jsonify({'success': False, 'error': 'No file selected'}), 400
-
-            if file and file.filename.endswith('.csv'):
-                file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-                file.save(file_path)
-                print(file_path)
-                # You can perform further processing on the saved CSV file here
-        
-        data2 = ('uploads/compress_dct.csv')
-        data3 = ('uploads/mean_std_dct.csv')
-
-        global g_compress_file3
-        g_compress_file3 = data2 
-        global g_mean_std_file
-        g_mean_std_file = data3
-
-        return jsonify({'success': True})
-
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/reconstruct', methods=['GET'])
-def reconstruct():
-    # X_pca = g_X_pca
-    # principal_components = g_principal_components
-    # mean_std_file = g_mean_std_file
-    # mean_std_dev_data = pd.read_csv(mean_std_file)
-
-    X_pca = pd.read_csv(compress_file)
-    principal_components = pd.read_csv(pc_data_file)
-    mean_std_file = g_mean_std_file
-    mean_std_dev_data = pd.read_csv(mean_std_file)
-
-    input_file_path = mean_std_file # Replace with your input file path
-    df = pd.read_csv(input_file_path)
-
-    first_column = df.iloc[:, 0]
-    column_names_list = first_column.tolist()
-
-    reconstructed_data = np.dot(X_pca, principal_components.T)
-    reconstructed_df = pd.DataFrame(reconstructed_data, columns=column_names_list)
-
-    filename = os.path.basename(input_modified_file)
-    reconstructed_file_path = os.path.join(app.config['UPLOAD_FOLDER'], "reconstructed.csv")
-    reconstructed_df.to_csv(reconstructed_file_path, index=False, float_format='%.4f')
-
-    global reconstructed_file
-    reconstructed_file = reconstructed_file_path #global file
-    # return send_file(reconstructed_file, as_attachment=True)
-
-    add_row_to_csv(reconstructed_file, fake_output_file)
-    X_reconstructed_data = pd.read_csv(fake_output_file)
-
-    first_four_rows = X_reconstructed_data.head(4).to_dict(orient='records')
-    return jsonify({
-        "success": True,
-        "message": "File uploaded and processed successfully",
-        "data": first_four_rows
-    }) 
-
-@app.route('/original', methods=['GET'])
-def original():
-    # Input CSV file paths
-    reconstructed_data_csv_file = reconstructed_file
-    mean_std_dev_csv_file = g_mean_std_file
-
-    # Read the standardized data from the CSV file
-    reconstructed_data = pd.read_csv(reconstructed_data_csv_file)
-
-    # Read means and standard deviations from the CSV file
-    mean_std_dev_data = pd.read_csv(mean_std_dev_csv_file)
-
-    # Extract means and standard deviations
-    means = mean_std_dev_data['Mean'].values
-    stds = mean_std_dev_data['Standard_Deviation'].values
-
-    # Reverse the standardization to obtain the original data
-    original_data = reverse_standardization(reconstructed_data, means, stds)
-
-    filename = os.path.basename(input_modified_file)
-    original_csv_file = os.path.join(app.config['UPLOAD_FOLDER'], "reconstructed.csv")
-    original_data.to_csv(original_csv_file, index=False, float_format='%.4f')
-    global g_original_file 
-    g_original_file = original_csv_file
-
-    # Original data
-    original_data_str = """Bus ODESSA 2 0 V pu,Bus ODESSA 2 0 V angle,Bus ODESSA 2 0 Frequency,Bus PRESIDIO 2 0 V pu,Bus PRESIDIO 2 0 V angle,Bus PRESIDIO 2 0 Frequency,Bus O DONNELL 1 0 V pu,Bus O DONNELL 1 0 V angle,Bus O DONNELL 1 0 Frequency,Bus O DONNELL 1 1 V pu,Bus O DONNELL 1 1 V angle,Bus O DONNELL 1 1 Frequency,Bus BIG SPRING 5 0 V pu,Bus BIG SPRING 5 0 V angle,Bus BIG SPRING 5 0 Frequency,Bus BIG SPRING 5 1 V pu,Bus BIG SPRING 5 1 V angle,Bus BIG SPRING 5 1 Frequency,Bus VAN HORN 0 V pu,Bus VAN HORN 0 V angle,Bus VAN HORN 0 Frequency,Bus IRAAN 2 0 V pu,Bus IRAAN 2 0 V angle,Bus IRAAN 2 0 Frequency,Bus IRAAN 2 1 V pu,Bus IRAAN 2 1 V angle,Bus IRAAN 2 1 Frequency,Bus PRESIDIO 1 0 V pu,Bus PRESIDIO 1 0 V angle,Bus PRESIDIO 1 0 Frequency,Bus PRESIDIO 1 1 V pu,Bus PRESIDIO 1 1 V angle,Bus PRESIDIO 1 1 Frequency,Bus SANDERSON 0 V pu,Bus SANDERSON 0 V angle,Bus SANDERSON 0 Frequency,Bus MONAHANS 2 0 V pu,Bus MONAHANS 2 0 V angle,Bus MONAHANS 2 0 Frequency,Bus GRANDFALLS 0 V pu,Bus GRANDFALLS 0 V angle,Bus GRANDFALLS 0 Frequency,Bus MARFA 0 V pu,Bus MARFA 0 V angle,Bus MARFA 0 Frequency,Bus GARDEN CITY 0 V pu,Bus GARDEN CITY 0 V angle,Bus GARDEN CITY 0 Frequency,Bus ODESSA 4 0 V pu,Bus ODESSA 4 0 V angle,Bus ODESSA 4 0 Frequency,Bus NOTREES 0 V pu,Bus NOTREES 0 V angle,Bus NOTREES 0 Frequency,Bus MIDLAND 4 0 V pu,Bus MIDLAND 4 0 V angle,Bus MIDLAND 4 0 Frequency,Bus BIG SPRING 1 0 V pu,Bus BIG SPRING 1 0 V angle,Bus BIG SPRING 1 0 Frequency,Bus BIG SPRING 1 1 V pu,Bus BIG SPRING 1 1 V angle,Bus BIG SPRING 1 1 Frequency,Bus O DONNELL 2 0 V pu,Bus O DONNELL 2 0 V angle,Bus O DONNELL 2 0 Frequency,Bus O DONNELL 2 1 V pu,Bus O DONNELL 2 1 V angle,Bus O DONNELL 2 1 Frequency,Bus ODESSA 6 0 V pu,Bus ODESSA 6 0 V angle,Bus ODESSA 6 0 Frequency,Bus BIG SPRINGS 0 V pu,Bus BIG SPRINGS 0 V angle,Bus BIG SPRINGS 0 Frequency,Bus BIG SPRINGS 1 V pu,Bus BIG SPRINGS 1 V angle,Bus BIG SPRINGS 1 Frequency,Bus MIDLAND 2 0 V pu,Bus MIDLAND 2 0 V angle,Bus MIDLAND 2 0 Frequency,Bus COAHOMA 0 V pu,Bus COAHOMA 0 V angle,Bus COAHOMA 0 Frequency,Bus MIDLAND 3 0 V pu,Bus MIDLAND 3 0 V angle,Bus MIDLAND 3 0 Frequency,Bus ALPINE 0 V pu,Bus ALPINE 0 V angle,Bus ALPINE 0 Frequency,Bus FORT DAVIS 0 V pu,Bus FORT DAVIS 0 V angle,Bus FORT DAVIS 0 Frequency,Bus MCCAMEY 1 0 V pu,Bus MCCAMEY 1 0 V angle,Bus MCCAMEY 1 0 Frequency,Bus KERMIT 0 V pu,Bus KERMIT 0 V angle,Bus KERMIT 0 Frequency,Bus ODESSA 1 0 V pu,Bus ODESSA 1 0 V angle,Bus ODESSA 1 0 Frequency,Bus ALPINE 1 0 V pu,Bus ALPINE 1 0 V angle,Bus ALPINE 1 0 Frequency,Bus ALPINE 1 1 V pu,Bus ALPINE 1 1 V angle,Bus ALPINE 1 1 Frequency,Bus MARFA 1 0 V pu,Bus MARFA 1 0 V angle,Bus MARFA 1 0 Frequency,Bus MARFA 1 1 V pu,Bus MARFA 1 1 V angle,Bus MARFA 1 1 Frequency,Bus MIDLAND 1 0 V pu,Bus MIDLAND 1 0 V angle,Bus MIDLAND 1 0 Frequency,Bus SEMINOLE 0 V pu,Bus SEMINOLE 0 V angle,Bus SEMINOLE 0 Frequency,Bus BIG SPRING 3 0 V pu,Bus BIG SPRING 3 0 V angle,Bus BIG SPRING 3 0 Frequency,Bus ODESSA 5 0 V pu,Bus ODESSA 5 0 V angle,Bus ODESSA 5 0 Frequency,Bus BIG SPRING 4 0 V pu,Bus BIG SPRING 4 0 V angle,Bus BIG SPRING 4 0 Frequency,Bus ODESSA 3 0 V pu,Bus ODESSA 3 0 V angle,Bus ODESSA 3 0 Frequency,Bus ODESSA 3 1 V pu,Bus ODESSA 3 1 V angle,Bus ODESSA 3 1 Frequency,Bus BIG SPRING 2 0 V pu,Bus BIG SPRING 2 0 V angle,Bus BIG SPRING 2 0 Frequency,Bus ALPINE 2 0 V pu,Bus ALPINE 2 0 V angle,Bus ALPINE 2 0 Frequency,Bus MARFA 2 0 V pu,Bus MARFA 2 0 V angle,Bus MARFA 2 0 Frequency,Bus MIDLAND 0 V pu,Bus MIDLAND 0 V angle,Bus MIDLAND 0 Frequency,Bus MONAHANS 1 0 V pu,Bus MONAHANS 1 0 V angle,Bus MONAHANS 1 0 Frequency,Bus MCCAMEY 2 0 V pu,Bus MCCAMEY 2 0 V angle,Bus MCCAMEY 2 0 Frequency,Bus SEMINOLE 1 0 V pu,Bus SEMINOLE 1 0 V angle,Bus SEMINOLE 1 0 Frequency,Bus MCCAMEY 0 V pu,Bus MCCAMEY 0 V angle,Bus MCCAMEY 0 Frequency,Bus MONAHANS 0 V pu,Bus MONAHANS 0 V angle,Bus MONAHANS 0 Frequency,Bus ODESSA 0 V pu,Bus ODESSA 0 V angle,Bus ODESSA 0 Frequency"""
-
-    # Parsing the original data
-    parsed_data = original_data_str.split(',')
-
-    # Storing data in a dictionary
-    bus_data = {}
-    for item in parsed_data:
-        parts = item.split()
-        bus_name = ' '.join(parts[1:-3])  # Extracting bus name
-        parameter = parts[-3]  # Extracting parameter (e.g., V pu, V angle, Frequency)
-        value = parts[-1]  # Extracting value
-        if bus_name not in bus_data:
-            bus_data[bus_name] = {}
-        bus_data[bus_name][parameter] = value
-
-    # Printing the formatted output
-    print("Bus Data:")
-    for bus, parameters in bus_data.items():
-        print(bus)
-        for parameter, value in parameters.items():
-            print(f"- {parameter}: {value}")
-
-    add_row_to_csv(original_csv_file, fake_output_file)
-    X_original_data = pd.read_csv(fake_output_file)
-
-    first_four_rows = X_original_data.head(4).to_dict(orient='records')
-    return jsonify({
-        "success": True,
-        "message": "File uploaded and processed successfully",
-        "data": first_four_rows
-    })
-
-def reverse_standardization(reconstructed_data, means, stds):
-        # Reverse the standardization
-        original_data = (reconstructed_data * stds) + means
-        return original_data
-
-@app.route('/download-files', methods=['GET'])
-def download_files():
-    global compress_file, pc_data_file, g_mean_std_file
-    file_paths = [compress_file, pc_data_file, g_mean_std_file]
-
-    # Create a zip file in memory
-    zip_data = io.BytesIO()
-    with zipfile.ZipFile(zip_data, mode='w') as zip_file:
-        for file_path in file_paths:
-            if os.path.isfile(file_path):
-                filename = os.path.basename(file_path)
-                zip_file.write(file_path, filename)
-
-    zip_data.seek(0)
-
-    # Create a response object with the zip file data
-    response = make_response(zip_data.getvalue())
-    response.headers['Content-Type'] = 'application/zip'
-    response.headers['Content-Disposition'] = 'attachment; filename=files.zip'
-
-    return response
-
-@app.route('/download-compressed-csv', methods=['GET'])
-def download_compressed_csv():
-    global g_original_file
-    file_path = g_original_file
-
-    # Check if the file exists
-    if os.path.isfile(file_path):
-        # Create a response object with the CSV file data
-        response = make_response(send_file(file_path, as_attachment=True))
-        response.headers['Content-Disposition'] = f'attachment; filename={os.path.basename(file_path)}'
-        response.headers['Content-Type'] = 'text/csv'
-
-        return response
-    else:
-        return jsonify({"error": "File not found"}), 404
-    
-@app.route('/download-4', methods=['GET'])
-def download_3():
-    file_path = g_reconstructed_file_3
-
-    # Check if the file exists
-    if os.path.isfile(file_path):
-        # Create a response object with the CSV file data
-        response = make_response(send_file(file_path, as_attachment=True))
-        response.headers['Content-Disposition'] = f'attachment; filename={os.path.basename(file_path)}'
-        response.headers['Content-Type'] = 'text/csv'
-
-        return response
-    else:
-        return jsonify({"error": "File not found"}), 404
-
-@app.route('/download-files3', methods=['GET'])
-def download_files3():
-    global g_compress_file3, g_mean_std_file
-    file_paths = [g_compress_file3, g_mean_std_file]
-
-    # Create a zip file in memory
-    zip_data = io.BytesIO()
-    with zipfile.ZipFile(zip_data, mode='w') as zip_file:
-        for file_path in file_paths:
-            if os.path.isfile(file_path):
-                filename = os.path.basename(file_path)
-                zip_file.write(file_path, filename)
-
-    zip_data.seek(0)
-
-    # Create a response object with the zip file data
-    response = make_response(zip_data.getvalue())
-    response.headers['Content-Type'] = 'application/zip'
-    response.headers['Content-Disposition'] = 'attachment; filename=files.zip'
-
-    return response
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
