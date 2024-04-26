@@ -67,7 +67,7 @@ const Upload4 = () => {
   return (
     <div className="file-upload-container">
       <img className="logo" src="../../public/img/logoo.png" alt="Logo" />
-      <h2 className="heading">Dct Reconstruction</h2>
+      <h2 className="heading">DCT Reconstruction</h2>
       <div className="input-container">
         <input
           className="upload-input"

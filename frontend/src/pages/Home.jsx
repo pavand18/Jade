@@ -40,10 +40,10 @@ const FileUpload = () => {
         <input className="upload-input" type="file" onChange={onFileChange} />
         <button className="upload-button" onClick={onFileUpload}>Upload</button>
       </div> */}
-      <Link to="/upload1" className="home-link">pca compression</Link>
-      <Link to="/upload2" className="home-link">pca reconstruction</Link>
-      <Link to="/upload3" className="home-link">dct compression</Link>
-      <Link to="/upload4" className="home-link">dct reconstruction</Link>
+      <Link to="/upload1" className="home-link">PCA Compression</Link>
+      <Link to="/upload2" className="home-link">PCA Reconstruction</Link>
+      <Link to="/upload3" className="home-link">DCT Compression</Link>
+      <Link to="/upload4" className="home-link">DCT Reconstruction</Link>
     </div>
   );
 };

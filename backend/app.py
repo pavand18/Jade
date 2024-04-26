@@ -569,16 +569,18 @@ def get_file_sizes():
 
 @app.route('/get-file-sizes3', methods=['GET'])
 def get_file_sizes3():
-    global g_compress_file3, g_mean_std_file
+    global g_compress_file3, g_input_file_3
 
+    input_file_size = os.path.getsize(g_input_file_3)
     compressed_files_sizes = {
         'compress_file': os.path.getsize(g_compress_file3),
-        'g_mean_std_file': os.path.getsize(g_mean_std_file),
     }
 
     return jsonify({
+        'inputFileSize': input_file_size,
         'compressedFilesSizes': compressed_files_sizes,
     })
+    
 
 @app.route('/calculate-rmse', methods=['GET'])
 def calculate_rmse():

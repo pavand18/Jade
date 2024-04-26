@@ -35,7 +35,7 @@ const Upload1 = () => {
   return (
     <div className="file-upload-container">
       <img className="logo" src="../../public/img/logoo.png" alt="Logo" />
-      <h2 className='heading'>Data Compression</h2>
+      <h2 className='heading'>PCA Compression</h2>
       <div className="input-container">
         <input className="upload-input" type="file" onChange={onFileChange} />
         <button className="upload-button" onClick={onFileUpload}>Upload</button>
