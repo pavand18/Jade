@@ -11,7 +11,7 @@ const Topbar = () => {
       </Link>
       <span className="brand-name">Big Sync</span>
       <Link to="/" >
-        <button className="upload-file-button">Upload File</button>
+        <button className="upload-file-button">Home</button>
       </Link>
     </nav>
   );

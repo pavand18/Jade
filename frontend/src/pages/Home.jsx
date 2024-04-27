@@ -35,15 +35,18 @@ const FileUpload = () => {
   return (
     <div className="file-upload-container">
       <img className="logo" src="../../public/img/logoo.png" alt="Logo" />
-      <h2 className='heading'>Home Page</h2>
-      {/* <div className="input-container">
-        <input className="upload-input" type="file" onChange={onFileChange} />
-        <button className="upload-button" onClick={onFileUpload}>Upload</button>
-      </div> */}
-      <Link to="/upload1" className="home-link">PCA Compression</Link>
-      <Link to="/upload2" className="home-link">PCA Reconstruction</Link>
-      <Link to="/upload3" className="home-link">DCT Compression</Link>
-      <Link to="/upload4" className="home-link">DCT Reconstruction</Link>
+      <h2 className='heading'> PMU DATA <br/> COMPRESSION </h2>
+      
+      <div className="button-container">
+        <div className="button-row1">
+          <button className="home-button1" onClick={() => navigate('/upload1')}>PCA Compression</button>
+          <button className="home-button1" onClick={() => navigate('/upload2')}>PCA Reconstruction</button>
+        </div>
+        <div className="button-row2">
+          <button className="home-button1" onClick={() => navigate('/upload3')}>DCT Compression</button>
+          <button className="home-button1" onClick={() => navigate('/upload4')}>DCT Reconstruction</button>
+        </div>
+      </div> 
     </div>
   );
 };

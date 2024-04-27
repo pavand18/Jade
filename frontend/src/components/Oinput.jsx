@@ -1,96 +1,16 @@
-// import React, { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
-// import Ocol from './Ocol';
-// import './Input.css'; // Import the existing CSS file
-
-// const Oinput = () => {
-//  const [number, setNumber] = useState('');
-//  const navigate = useNavigate();
-//  const [showPlot, setShowPlot] = useState(false);
-//  const [col1Key, setCol1Key] = useState(0);
-
-//  const handleSubmit = async (event) => {
-//     event.preventDefault();
-//     const response = await fetch('http://localhost:5000/submit5', {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({ number }),
-//     });
-
-//     if (response.ok) {
-//       setCol1Key(prevKey => prevKey + 1);
-//       setShowPlot(true);
-//     } else {
-//       alert('Failed to submit number.');
-//     }
-//  };
-
-//  const calculateCompressionPercentage = async () => {
-//   try {
-//     const response = await fetch('http://localhost:5000/get-file-sizes');
-//     const data = await response.json();
-
-//     if (response.ok) {
-//       const inputFileSize = data.inputFileSize;
-//       const compressedFilesSizes = Object.values(data.compressedFilesSizes);
-//       const totalCompressedSize = compressedFilesSizes.reduce((sum, size) => sum + size, 0);
-//       const compressionPercentage = ((inputFileSize - totalCompressedSize) / inputFileSize) * 100;
-
-//       console.log('Input File Size:', inputFileSize);
-//       console.log('Compressed Files Sizes:', compressedFilesSizes);
-//       console.log(`Compression Percentage: ${compressionPercentage.toFixed(2)}%`);
-//     } else {
-//       console.error('Failed to calculate compression percentage.');
-//     }
-//   } catch (error) {
-//     console.error('There was a problem calculating compression percentage:', error);
-//   }
-// };
-
-//  return (
-//     <>
-//     <div>
-//       <form onSubmit={handleSubmit} className="form-container">
-//         <input
-//           type="number"
-//           placeholder="Plot : Column Number"
-//           value={number}
-//           onChange={(e) => setNumber(e.target.value)}
-//           className="input-field"
-//         />
-//         <button type="submit" className="submit-button">Submit</button>
-       
-//       </form>
-//       <button className="submit-button" onClick={calculateCompressionPercentage}>
-//           Compression
-//       </button>
-//     </div>
-//       <div>
-//           {showPlot && <Ocol key={col1Key} />}
-//       </div>
-//     </>
-//  );
-// };
-
-// export default Oinput;
-
-
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Ocol from './Ocol';
 import './Input.css';
 
 const Oinput = () => {
-  const [number, setNumber] = useState('');
-  const navigate = useNavigate();
-  const [showPlot, setShowPlot] = useState(false);
-  const [col1Key, setCol1Key] = useState(0);
-  const [fileSizeInfo, setFileSizeInfo] = useState(null);
+ const [number, setNumber] = useState('');
+ const navigate = useNavigate();
+ const [showPlot, setShowPlot] = useState(false);
+ const [col1Key, setCol1Key] = useState(0);
+ const [fileSizeInfo, setFileSizeInfo] = useState(null);
 
-  const handleSubmit = async (event) => {
+ const handleSubmit = async (event) => {
     event.preventDefault();
     const response = await fetch('http://localhost:5000/submit5', {
       method: 'POST',
@@ -101,13 +21,13 @@ const Oinput = () => {
     });
     if (response.ok) {
       setCol1Key((prevKey) => prevKey + 1);
-      setShowPlot(true);
+      // setShowPlot(true);
     } else {
       alert('Failed to submit number.');
     }
-  };
+ };
 
-  const calculateCompressionPercentage = async () => {
+ const calculateCompressionPercentage = async () => {
     try {
       const response = await fetch('http://localhost:5000/get-file-sizes');
       const data = await response.json();
@@ -135,18 +55,19 @@ const Oinput = () => {
         };
   
         setFileSizeInfo(info);
+        setShowPlot(!showPlot); // Toggle the visibility of the results
       } else {
         console.error('Failed to calculate compression percentage.');
       }
     } catch (error) {
       console.error('There was a problem calculating compression percentage:', error);
     }
-  };
+ };
 
-  return (
+ return (
     <>
       <div>
-        <form onSubmit={handleSubmit} className="form-container">
+        <form onSubmit={handleSubmit} className="form-container1">
           <input
             type="number"
             placeholder="Plot : Column Number"
@@ -159,27 +80,29 @@ const Oinput = () => {
           </button>
         </form>
         <button className="submit-button" onClick={calculateCompressionPercentage}>
-          Compression
+          % Compression & Error
         </button>
       </div>
-      <div>
-        {fileSizeInfo && (
-          <div>
-            <p>Input File Size: {fileSizeInfo.inputFileSize} KB</p>
-            <p>Compressed Files Sizes:</p>
-            <ul>
-              {fileSizeInfo.compressedFilesSizes.map((size, index) => (
-                <li key={index}>File {index + 1}: {size} KB</li>
-              ))}
-            </ul>
-            <p>Compression Percentage: {fileSizeInfo.compressionPercentage}%</p>
-            <p>Root Mean Square Error (RMSE): {fileSizeInfo.rmse}</p>
-          </div>
+
+      <div className="container22">
+        {showPlot && fileSizeInfo && (
+            <div className="file-size-info"> {/* Apply the class here */}
+              <p>Input File Size: {fileSizeInfo.inputFileSize} KB</p>
+              <p>Compressed Files Sizes:</p>
+              <ul>
+                {fileSizeInfo.compressedFilesSizes.map((size, index) => (
+                 <li key={index}>File {index + 1}: {size} KB</li>
+                ))}
+              </ul>
+              <p>Compression Percentage: {fileSizeInfo.compressionPercentage}%</p>
+              <p>Root Mean Square Error (RMSE): {fileSizeInfo.rmse}</p>
+            </div>
         )}
-      </div>
-      <div>{showPlot && <Ocol key={col1Key} />}</div>
+      </div>  
+
+      <div>{ <Ocol key={col1Key} />}</div>
     </>
-  );
+ );
 };
 
 export default Oinput;

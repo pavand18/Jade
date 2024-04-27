@@ -1,45 +1,83 @@
 /* src/FileUpload.css */
-
 .file-upload-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center align content horizontally */
-  }
-  
-  .logo {
-    margin-top: 70px;
-    margin-bottom: 95px; /* Add margin below the image */
-    width: 600px; /* Set the width of the image */
-  }
-  
-  .input-container {
-    display: flex;
-    align-items: center; /* Center align content horizontally */
-  }
-  
-  .upload-input {
-    margin-right: 10px; /* Add margin between the input and button */
-  }
-  
-  .upload-button {
-    padding: 10px 20px; /* Add padding to the button */
-    background-color: #007bff; /* Set background color */
-    color: white; /* Set text color */
-    border: none; /* Remove border */
-    border-radius: 5px; /* Add border radius */
-    cursor: pointer; /* Add cursor pointer */
-  }
-  
-  .upload-button:hover {
-    background-color: #0056b3; /* Change background color on hover */
-  }
-  
-  .heading{
-    color: rgb(0, 0, 0);
-    font-size: 37px;
-    margin-bottom: 48px;
-    text-align: center;
-    font-family: "Ubuntu", sans-serif;
-    font-weight: 400;
-    font-style: normal;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center align content horizontally */
+ }
+ 
+ .logo {
+  margin-top: 70px;
+  margin-bottom: 95px; /* Add margin below the image */
+  width: 600px; /* Set the width of the image */
+ }
+ 
+ .input-container {
+  display: flex;
+  align-items: center; /* Center align content horizontally */
+ }
+ 
+ .upload-input {
+  margin-right: 10px; /* Add margin between the input and button */
+ }
+ 
+ .upload-button {
+  padding: 10px 20px; /* Add padding to the button */
+  background-color: #007bff; /* Set background color */
+  color: white; /* Set text color */
+  border: none; /* Remove border */
+  border-radius: 5px; /* Add border radius */
+  cursor: pointer; /* Add cursor pointer */
+ }
+ 
+ .upload-button:hover {
+  background-color: #0056b3; /* Change background color on hover */
+ }
+ 
+ .heading {
+  color: rgb(0, 0, 0);
+  font-size: 37px;
+  margin-bottom: 70px;
+  text-align: center;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 42px;
+  font-weight: 400;
+  font-style: normal;
+ }
+ 
+ .button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 500px; /* Ensure the container takes the full width */
+ }
+ 
+.button-row1{
+  margin-top: 10px;
+}
+
+ .button-row1, .button-row2 {
+  display: flex;
+  justify-content: center;
+  width: 100%; /* Ensure the rows take the full width */
+  margin-bottom: 25px; /* Add margin below each row */
+ }
+ 
+ .home-button1 {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  margin: 0 10px;
+  cursor: pointer;
+  font-size: 17px;
+  flex-basis: calc(50% - 20px); /* Adjust the width to ensure two buttons fit per row */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+ }
+ 
+ .home-button1:hover {
+  background-color: #0056b3;
+ }
+ 

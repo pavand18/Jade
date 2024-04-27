@@ -1,0 +1,45 @@
+fileupload.css
+
+.file-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center align content horizontally */
+  } 
+  
+  .logo {
+    margin-top: 70px;
+    margin-bottom: 95px; /* Add margin below the image */
+    width: 600px; /* Set the width of the image */
+  }
+  
+  .input-container {
+    display: flex;
+    align-items: center; /* Center align content horizontally */
+  }
+  
+  .upload-input {
+    margin-right: 10px; /* Add margin between the input and button */
+  }
+  
+  .upload-button {
+    padding: 10px 20px; /* Add padding to the button */
+    background-color: #007bff; /* Set background color */
+    color: white; /* Set text color */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Add border radius */
+    cursor: pointer; /* Add cursor pointer */
+  }
+  
+  .upload-button:hover {
+    background-color: #0056b3; /* Change background color on hover */
+  }
+  
+  .heading{
+    color: rgb(0, 0, 0);
+    font-size: 37px;
+    margin-bottom: 48px;
+    text-align: center;
+    font-family: "Ubuntu", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+  }

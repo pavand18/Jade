@@ -79,7 +79,7 @@ return (
     ) : (
       <p>Loading CSV data...</p>
     )}
-    <div className="button-container">
+    <div className="button-container1">
         <button className="data-button" onClick={handleDownloadFiles}>
           Download Compressed Files (3)
         </button>   
